@@ -677,15 +677,15 @@ async function api(req, res, url) {
   if (url.pathname === '/api/auto-session' && method === 'POST') {
     let user = currentUser(req);
     if (!user) {
-      user = db.prepare('SELECT * FROM users WHERE disabled=0 ORDER BY id ASC LIMIT 1').get();
-      if (!user) {
-        const id = Number(
-          db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,created_at) VALUES(?,?,?,?,?)')
-            .run('6631306048@lamduan.ac.mfu.th', passwordHash('learninghaus-default'), 'TONOAK', '', now())
-            .lastInsertRowid
-        );
-        user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
-      }
+      const guestTag = randomBytes(2).toString('hex').toUpperCase();
+      const guestEmail = `guest_${Date.now()}_${guestTag.toLowerCase()}@guest.learninghaus`;
+      const guestName = `Guest-${guestTag}`;
+      const id = Number(
+        db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,created_at) VALUES(?,?,?,?,?)')
+          .run(guestEmail, passwordHash(randomBytes(12).toString('hex')), guestName, '', now())
+          .lastInsertRowid
+      );
+      user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
       issueSession(res, user, true);
     }
     return json(res, 200, { user: accountUser(user) });

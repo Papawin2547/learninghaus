@@ -2532,7 +2532,7 @@ var LearningHausStageCatalog;
             realmName: "Sunflower Meadow",
             thaiRealm: "ทุ่งทานตะวันยามเช้า",
             lore: "Bright summer skies, rolling green hills & blooming golden sunflowers",
-            companionImage: "../New_design/cat1.png",
+            companionImage: "lesson-assets/ext/cats/cat1.png",
             companionName: "Scholar Calico",
             accent: "#3B8146",
             shadow: "#286336",
@@ -2551,7 +2551,7 @@ var LearningHausStageCatalog;
             realmName: "The Forbidden Obsidian Vault",
             thaiRealm: "เขตต้องห้ามแห่งเงามืด",
             lore: "Shadowy iron gates, watchful crimson seals & amber warning torches",
-            companionImage: "../New_design/cat2.png",
+            companionImage: "lesson-assets/ext/cats/cat2.png",
             companionName: "Inspector Black Cat",
             accent: "#C93B3B",
             shadow: "#8F2229",
@@ -2570,7 +2570,7 @@ var LearningHausStageCatalog;
             realmName: "The Amber Bastion Citadel",
             thaiRealm: "ป้อมปราการอัศวินแห่งความเสี่ยงสูง",
             lore: "Dusk skyline battlements, brass shield emblems & forged ember trails",
-            companionImage: "../New_design/cat3.png",
+            companionImage: "lesson-assets/ext/cats/cat3.png",
             companionName: "Gavel Knight Cat",
             accent: "#D97028",
             shadow: "#9E4B14",
@@ -2589,7 +2589,7 @@ var LearningHausStageCatalog;
             realmName: "Twilight Mirror Observatory",
             thaiRealm: "หอดูดาวกระจกแห่งความจริง",
             lore: "Starlight prisms, glowing detective lenses & truth-revealing mirrors",
-            companionImage: "../New_design/cat4.png",
+            companionImage: "lesson-assets/ext/cats/cat4.png",
             companionName: "Scholar Cloak Cat",
             accent: "#545BB8",
             shadow: "#393F8E",
@@ -2608,7 +2608,7 @@ var LearningHausStageCatalog;
             realmName: "The Arcane Astral Spire",
             thaiRealm: "หอคอยจอมเวทนิวรอล",
             lore: "Crystal-orb ley lines, starlit amethyst spires & multi-spell runes",
-            companionImage: "../New_design/cat5.png",
+            companionImage: "lesson-assets/ext/cats/cat5.png",
             companionName: "Arcane Scroll Cat",
             accent: "#8E44E3",
             shadow: "#5F24A8",
@@ -2627,7 +2627,7 @@ var LearningHausStageCatalog;
             realmName: "Emerald Alchemist Conservatory",
             thaiRealm: "เรือนกระจกนักแปรธาตุ",
             lore: "Sky-lit glasshouse dome, bubbling teal elixirs & thriving green sprouts",
-            companionImage: "../New_design/cat6.png",
+            companionImage: "lesson-assets/ext/cats/cat6.png",
             companionName: "Alchemist Scholar Cat",
             accent: "#1C8A6E",
             shadow: "#125E4A",
@@ -2646,7 +2646,7 @@ var LearningHausStageCatalog;
             realmName: "Riverside Village",
             thaiRealm: "หมู่บ้านริมน้ำยามเช้า",
             lore: "Soft sunrise skies, riverside timber cottages & a sparkling winding stream",
-            companionImage: "../New_design/cat7.png",
+            companionImage: "lesson-assets/ext/cats/cat7.png",
             companionName: "Council Presenter Cat",
             accent: "#2C7A7B",
             shadow: "#1D5657",
@@ -2665,7 +2665,7 @@ var LearningHausStageCatalog;
             realmName: "Snowy Peak",
             thaiRealm: "ยอดเขาหิมะแสงเหนือ",
             lore: "Shimmering northern aurora, snow-capped alpine peaks & frosted evergreen pines",
-            companionImage: "../New_design/cat8.png",
+            companionImage: "lesson-assets/ext/cats/cat8.png",
             companionName: "Summit Explorer Cat",
             accent: "#2F6690",
             shadow: "#1E4666",
@@ -4788,16 +4788,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-        // เปิดเข้าสู่หน้าแอปโดยอัตโนมัติหากผู้ใช้ไม่ได้กดออกจากระบบ (ไม่ต้องล็อกอินใหม่ทุกครั้งที่เปิดหรือรีเฟรชหน้าเว็บ)
+        // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ หรือคืนค่ามุมมองเดิมเฉพาะเมื่อเคยเข้าใช้งาน/ล็อกอินไว้แล้ว
         let explicitlyLoggedOut = false;
-        let savedView = "learn";
+        let savedView = "landing";
         try {
             explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
-            savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "learn";
+            savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
         }
         catch {
             explicitlyLoggedOut = false;
-            savedView = "learn";
+            savedView = "landing";
         }
         if (!explicitlyLoggedOut && savedView !== "landing") {
             if (savedView === "quiz") {
@@ -6308,7 +6308,7 @@ var LearningHausLearnHub;
             ratioTh: "ปกแนวตั้ง 3:4",
             creator: "LearningHaus Official",
             role: "enrolled",
-            image: "../Chapter/Chapter1.png",
+            image: "lesson-assets/ext/chapters/Chapter1.png",
             poster: "lesson-assets/chapter-1-poster.png",
             gradient: "linear-gradient(135deg, #27532d 0%, #3c7d42 100%)",
             iconName: "scale",
@@ -7449,9 +7449,9 @@ var LearningHausLearnHub;
             descriptionEn: `Joined with invite code ${code}. Open this class to study chapters and enter its Course Quiz.`,
             descriptionTh: `เข้าร่วมด้วยรหัสเชิญ ${code} เปิดห้องเรียนเพื่อดูบทเรียนและเข้าสู่หน้า Quiz ของคลาสนี้`,
             chapters: [
-                { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "../Chapter/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-                { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "../Chapter/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-                { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "../Chapter/Chapter3.png", mediaType: "reading" }
+                { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "lesson-assets/ext/chapters/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
+                { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "lesson-assets/ext/chapters/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
+                { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "lesson-assets/ext/chapters/Chapter3.png", mediaType: "reading" }
             ]
         };
         myClassesState.customClasses.unshift(joinedClass);
@@ -9849,7 +9849,7 @@ var LearningHausLearnHub;
             }
             if (target?.closest("[data-studio-add-ch]")) {
                 const nextNum = course.chapters.length + 1;
-                const defaults = ["../Chapter/Chapter1.png", "../Chapter/Chapter2.png", "../Chapter/Chapter3.png"];
+                const defaults = ["lesson-assets/ext/chapters/Chapter1.png", "lesson-assets/ext/chapters/Chapter2.png", "lesson-assets/ext/chapters/Chapter3.png"];
                 const mutable = [...course.chapters];
                 mutable.push({
                     title: `Lesson ${nextNum}`,
@@ -22770,24 +22770,7 @@ var LearningHausSocial;
                 await setSession((await request("/api/me")).user);
             }
             catch {
-                let explicitlyLoggedOut = false;
-                try {
-                    explicitlyLoggedOut = window.localStorage.getItem("learninghaus.explicitLogout.v1") === "true";
-                }
-                catch {
-                    explicitlyLoggedOut = false;
-                }
-                if (!explicitlyLoggedOut) {
-                    try {
-                        await setSession((await request("/api/auto-session", "POST", {})).user);
-                    }
-                    catch {
-                        await setSession(null);
-                    }
-                }
-                else {
-                    await setSession(null);
-                }
+                await setSession(null);
             }
         }
         else {
@@ -25458,12 +25441,17 @@ var LearningHausPartyArena;
             return { ok: false, status: 0, data: { error: t("Server unavailable", "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้") } };
         }
     };
+    let fallbackSessionUserId = 0;
+    const getMyUserId = () => window.LearningHausSocial?.currentUserId?.() || fallbackSessionUserId;
     const ensureUserSessionIfNeeded = async () => {
-        const existingId = window.LearningHausSocial?.currentUserId?.();
+        const existingId = getMyUserId();
         if (existingId)
             return existingId;
         const res = await apiFetch("/api/auto-session", { method: "POST", body: "{}" });
-        return res.data?.user?.id || 0;
+        const id = res.data?.user?.id || 0;
+        if (id)
+            fallbackSessionUserId = id;
+        return id;
     };
     const loadPresetsFromServerOrLocal = async () => {
         await ensureUserSessionIfNeeded();
@@ -25497,7 +25485,7 @@ var LearningHausPartyArena;
         const px = window.LearningHausPixelCat;
         if (!px || !currentRoom)
             return;
-        const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+        const myId = getMyUserId();
         const step = Math.floor(Date.now() / 260) % 4;
         const pose = catMood === "tap"
             ? { swayDx: 0, breathDy: 1, tailDx: 1, jumpPhase: "crouch" }
@@ -25596,7 +25584,7 @@ var LearningHausPartyArena;
         if (!dock || !currentRoom || !currentRoom.currentQuestion)
             return;
         const room = currentRoom;
-        const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+        const myId = getMyUserId();
         const me = room.players.find((p) => p.userId === myId);
         const q = room.currentQuestion;
         if (!q)
@@ -26240,7 +26228,7 @@ var LearningHausPartyArena;
         if (!overlayEl || !currentRoom)
             return;
         const room = currentRoom;
-        const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+        const myId = getMyUserId();
         const me = room.players.find((p) => p.userId === myId);
         const isHost = room.hostUserId === myId;
         const botCount = room.players.filter((p) => p.isBot).length;
@@ -26406,7 +26394,7 @@ var LearningHausPartyArena;
         }
     };
     const applyRoomSnapshot = (next) => {
-        const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+        const myId = getMyUserId();
         const prevStatus = lastRoomStatus;
         const prevQ = lastQuestionIdxRendered;
         const me = next.players.find((p) => p.userId === myId);

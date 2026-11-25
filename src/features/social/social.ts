@@ -989,21 +989,7 @@ namespace LearningHausSocial {
       try {
         await setSession((await request<{ user: Person }>("/api/me")).user);
       } catch {
-        let explicitlyLoggedOut = false;
-        try {
-          explicitlyLoggedOut = window.localStorage.getItem("learninghaus.explicitLogout.v1") === "true";
-        } catch {
-          explicitlyLoggedOut = false;
-        }
-        if (!explicitlyLoggedOut) {
-          try {
-            await setSession((await request<{ user: Person }>("/api/auto-session", "POST", {})).user);
-          } catch {
-            await setSession(null);
-          }
-        } else {
-          await setSession(null);
-        }
+        await setSession(null);
       }
     } else {
       await setSession(null);

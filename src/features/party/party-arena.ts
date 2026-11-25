@@ -521,11 +521,16 @@ namespace LearningHausPartyArena {
     }
   };
 
+  let fallbackSessionUserId = 0;
+  const getMyUserId = (): number => window.LearningHausSocial?.currentUserId?.() || fallbackSessionUserId;
+
   const ensureUserSessionIfNeeded = async (): Promise<number> => {
-    const existingId = window.LearningHausSocial?.currentUserId?.();
+    const existingId = getMyUserId();
     if (existingId) return existingId;
     const res = await apiFetch<{ user?: { id: number } }>("/api/auto-session", { method: "POST", body: "{}" });
-    return res.data?.user?.id || 0;
+    const id = res.data?.user?.id || 0;
+    if (id) fallbackSessionUserId = id;
+    return id;
   };
 
   const loadPresetsFromServerOrLocal = async (): Promise<void> => {
@@ -560,7 +565,7 @@ namespace LearningHausPartyArena {
     if (!overlayEl || overlayEl.hidden) return;
     const px = window.LearningHausPixelCat;
     if (!px || !currentRoom) return;
-    const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+    const myId = getMyUserId();
     const step = Math.floor(Date.now() / 260) % 4;
     const pose: LearningHausPixelCat.IdleAnimPose =
       catMood === "tap"
@@ -657,7 +662,7 @@ namespace LearningHausPartyArena {
     const dock = overlayEl?.querySelector<HTMLElement>("[data-party-answer-dock]");
     if (!dock || !currentRoom || !currentRoom.currentQuestion) return;
     const room = currentRoom;
-    const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+    const myId = getMyUserId();
     const me = room.players.find((p) => p.userId === myId);
     const q = room.currentQuestion;
     if (!q) return;
@@ -1348,7 +1353,7 @@ namespace LearningHausPartyArena {
   const renderRoom = (): void => {
     if (!overlayEl || !currentRoom) return;
     const room = currentRoom;
-    const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+    const myId = getMyUserId();
     const me = room.players.find((p) => p.userId === myId);
     const isHost = room.hostUserId === myId;
     const botCount = room.players.filter((p) => p.isBot).length;
@@ -1521,7 +1526,7 @@ namespace LearningHausPartyArena {
   };
 
   const applyRoomSnapshot = (next: PartyRoomState): void => {
-    const myId = window.LearningHausSocial?.currentUserId?.() || 0;
+    const myId = getMyUserId();
     const prevStatus = lastRoomStatus;
     const prevQ = lastQuestionIdxRendered;
     const me = next.players.find((p) => p.userId === myId);

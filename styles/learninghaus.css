@@ -23010,7 +23010,8 @@ body::-webkit-scrollbar,
   body.home-mode {
     height: auto !important;
     overflow-x: clip !important;
-    overflow-y: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
   }
   #home-view.home-view {
     height: auto !important;

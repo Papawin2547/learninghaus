@@ -1157,15 +1157,15 @@
       }
     });
 
-    // เปิดเข้าสู่หน้าแอปโดยอัตโนมัติหากผู้ใช้ไม่ได้กดออกจากระบบ (ไม่ต้องล็อกอินใหม่ทุกครั้งที่เปิดหรือรีเฟรชหน้าเว็บ)
+    // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ หรือคืนค่ามุมมองเดิมเฉพาะเมื่อเคยเข้าใช้งาน/ล็อกอินไว้แล้ว
     let explicitlyLoggedOut = false;
-    let savedView = "learn";
+    let savedView = "landing";
     try {
       explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
-      savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "learn";
+      savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
     } catch {
       explicitlyLoggedOut = false;
-      savedView = "learn";
+      savedView = "landing";
     }
     if (!explicitlyLoggedOut && savedView !== "landing") {
       if (savedView === "quiz") {

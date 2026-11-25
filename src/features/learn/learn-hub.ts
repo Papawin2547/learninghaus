@@ -1,4 +1,4 @@
-// My Classes (Classic Google Classroom Grid), Cleaned-Up Explore Lessons, Minimal 2-Step Class Studio, & Custom Lesson Player
+﻿// My Classes (Classic Google Classroom Grid), Cleaned-Up Explore Lessons, Minimal 2-Step Class Studio, & Custom Lesson Player
 namespace LearningHausLearnHub {
   export type CoverRatio = "portrait" | "landscape" | "square";
   export type ClassRole = "enrolled" | "teaching";
@@ -204,7 +204,7 @@ namespace LearningHausLearnHub {
       ratioTh: "ปกแนวตั้ง 3:4",
       creator: "LearningHaus Official",
       role: "enrolled",
-      image: "../Chapter/Chapter1.png",
+      image: "lesson-assets/ext/chapters/Chapter1.png",
       poster: "lesson-assets/chapter-1-poster.png",
       gradient: "linear-gradient(135deg, #27532d 0%, #3c7d42 100%)",
       iconName: "scale",
@@ -1464,9 +1464,9 @@ namespace LearningHausLearnHub {
       descriptionEn: `Joined with invite code ${code}. Open this class to study chapters and enter its Course Quiz.`,
       descriptionTh: `เข้าร่วมด้วยรหัสเชิญ ${code} เปิดห้องเรียนเพื่อดูบทเรียนและเข้าสู่หน้า Quiz ของคลาสนี้`,
       chapters: [
-        { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "../Chapter/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-        { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "../Chapter/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-        { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "../Chapter/Chapter3.png", mediaType: "reading" }
+        { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "lesson-assets/ext/chapters/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
+        { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "lesson-assets/ext/chapters/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
+        { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "lesson-assets/ext/chapters/Chapter3.png", mediaType: "reading" }
       ]
     };
 
@@ -3942,7 +3942,7 @@ namespace LearningHausLearnHub {
       }
       if (target?.closest("[data-studio-add-ch]")) {
         const nextNum = course.chapters.length + 1;
-        const defaults = ["../Chapter/Chapter1.png", "../Chapter/Chapter2.png", "../Chapter/Chapter3.png"];
+        const defaults = ["lesson-assets/ext/chapters/Chapter1.png", "lesson-assets/ext/chapters/Chapter2.png", "lesson-assets/ext/chapters/Chapter3.png"];
         const mutable = [...course.chapters];
         mutable.push({
           title: `Lesson ${nextNum}`,
