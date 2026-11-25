@@ -19,7 +19,7 @@ namespace LearningHausRules {
     baseXpPerLevel: 100,
     // ทุก Level ถัดไปต้องใช้ XP เพิ่มขึ้นเท่านี้
     xpGrowthPerLevel: 20,
-    // XP เริ่มต้นของบัญชีตัวอย่างในหน้า Profile
-    initialExp: 60
+    // XP เริ่มต้นสำหรับบัญชีใหม่ (เริ่มจาก 0 เสมอ)
+    initialExp: 0
   } as const;
 }

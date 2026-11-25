@@ -73,8 +73,8 @@ var LearningHausRules;
         baseXpPerLevel: 100,
         // ทุก Level ถัดไปต้องใช้ XP เพิ่มขึ้นเท่านี้
         xpGrowthPerLevel: 20,
-        // XP เริ่มต้นของบัญชีตัวอย่างในหน้า Profile
-        initialExp: 60
+        // XP เริ่มต้นสำหรับบัญชีใหม่ (เริ่มจาก 0 เสมอ)
+        initialExp: 0
     };
 })(LearningHausRules || (LearningHausRules = {}));
 // ข้อมูลในเบราว์เซอร์แยกตามบัญชีที่เข้าสู่ระบบ พร้อมตัวช่วยอ่าน/เขียน JSON และเช็คผู้ใช้ปัจจุบัน
@@ -13372,15 +13372,12 @@ var LearningHausPixelCat;
         }
     ]);
     LearningHausPixelCat.defaultPresetSlots = () => {
-        return Array.from({ length: LearningHausPixelCat.TOTAL_PRESET_SLOTS }, (_, index) => {
-            const starter = STARTER_PRESETS[index];
-            return {
-                slot: index + 1,
-                name: starter ? starter.name : `Preset ${index + 1}`,
-                config: starter ? LearningHausPixelCat.normalizeConfig(starter.config) : null,
-                updatedAt: starter ? "starter" : null
-            };
-        });
+        return Array.from({ length: LearningHausPixelCat.TOTAL_PRESET_SLOTS }, (_, index) => ({
+            slot: index + 1,
+            name: `Preset ${index + 1}`,
+            config: null,
+            updatedAt: null
+        }));
     };
     LearningHausPixelCat.normalizePresetSlots = (raw) => {
         const defaults = LearningHausPixelCat.defaultPresetSlots();

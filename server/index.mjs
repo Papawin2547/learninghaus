@@ -17,7 +17,7 @@ db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL,
     display_name TEXT NOT NULL, avatar TEXT NOT NULL DEFAULT '',
-    disabled INTEGER NOT NULL DEFAULT 0, total_xp INTEGER NOT NULL DEFAULT 60,
+    disabled INTEGER NOT NULL DEFAULT 0, total_xp INTEGER NOT NULL DEFAULT 0,
     about TEXT NOT NULL DEFAULT '', facebook_name TEXT NOT NULL DEFAULT '', facebook_url TEXT NOT NULL DEFAULT '',
     instagram_name TEXT NOT NULL DEFAULT '', instagram_url TEXT NOT NULL DEFAULT '',
     x_name TEXT NOT NULL DEFAULT '', x_url TEXT NOT NULL DEFAULT '',
@@ -134,7 +134,7 @@ db.exec(`
 `);
 const userColumns = new Set(db.prepare('PRAGMA table_info(users)').all().map((column) => column.name));
 for (const [name, definition] of Object.entries({
-  disabled:'INTEGER NOT NULL DEFAULT 0', total_xp:'INTEGER NOT NULL DEFAULT 60',
+  disabled:'INTEGER NOT NULL DEFAULT 0', total_xp:'INTEGER NOT NULL DEFAULT 0',
   is_developer:'INTEGER NOT NULL DEFAULT 0', last_active_at:"TEXT NOT NULL DEFAULT ''",
   about:"TEXT NOT NULL DEFAULT ''", facebook_name:"TEXT NOT NULL DEFAULT ''", facebook_url:"TEXT NOT NULL DEFAULT ''",
   instagram_name:"TEXT NOT NULL DEFAULT ''", instagram_url:"TEXT NOT NULL DEFAULT ''",
@@ -143,7 +143,7 @@ for (const [name, definition] of Object.entries({
   featured_achievements:"TEXT NOT NULL DEFAULT ''"
 })) if (!userColumns.has(name)) db.exec(`ALTER TABLE users ADD COLUMN ${name} ${definition}`);
 db.exec("UPDATE users SET avatar='' WHERE avatar LIKE '%Profire/PF0%'");
-db.exec('UPDATE users SET total_xp=MAX(total_xp,COALESCE((SELECT MAX(total_xp) FROM scores WHERE user_id=users.id),60))');
+db.exec('UPDATE users SET total_xp=MAX(total_xp,COALESCE((SELECT MAX(total_xp) FROM scores WHERE user_id=users.id),0))');
 
 const port = Number(process.env.PORT || process.env.LEARNINGHAUS_PORT || 8766);
 const host = process.env.LEARNINGHAUS_HOST || '0.0.0.0';

@@ -109,15 +109,12 @@ namespace LearningHausPixelCat {
   ]);
 
   export const defaultPresetSlots = (): PresetSlot[] => {
-    return Array.from({ length: TOTAL_PRESET_SLOTS }, (_, index) => {
-      const starter = STARTER_PRESETS[index];
-      return {
-        slot: index + 1,
-        name: starter ? starter.name : `Preset ${index + 1}`,
-        config: starter ? normalizeConfig(starter.config) : null,
-        updatedAt: starter ? "starter" : null
-      };
-    });
+    return Array.from({ length: TOTAL_PRESET_SLOTS }, (_, index) => ({
+      slot: index + 1,
+      name: `Preset ${index + 1}`,
+      config: null,
+      updatedAt: null
+    }));
   };
 
   export const normalizePresetSlots = (raw: unknown): PresetSlot[] => {
