@@ -1149,13 +1149,34 @@
       }
     });
 
-    (["learninghaus:language-changed", "learninghaus:profile-updated", "learninghaus:pixel-cat-updated"] as const).forEach((evName) => {
+    const syncLandingAuthActions = (): void => {
+      const signedIn = Boolean(window.LearningHausSocial?.hasAccount?.());
+      const welcomeEl = document.querySelector<HTMLElement>("[data-hero-welcome]");
+      const signinBtn = document.getElementById("signin");
+      const createBtn = document.getElementById("create-account");
+      if (signinBtn) signinBtn.hidden = signedIn;
+      if (createBtn) createBtn.hidden = signedIn;
+      if (welcomeEl) {
+        if (signedIn) {
+          const userName = String(window.LearningHausProfile?.getProfile?.()?.name || "").trim() || LearningHausI18n.t("Learner", "ผู้เรียน");
+          welcomeEl.textContent = LearningHausI18n.t(`Welcome back, ${userName}!`, `ยินดีต้อนรับกลับมา, ${userName}!`);
+          welcomeEl.hidden = false;
+        } else {
+          welcomeEl.textContent = "";
+          welcomeEl.hidden = true;
+        }
+      }
+    };
+
+    (["learninghaus:language-changed", "learninghaus:profile-updated", "learninghaus:pixel-cat-updated", "learninghaus:social-session"] as const).forEach((evName) => {
       window.addEventListener(evName, () => {
+        syncLandingAuthActions();
         if (lookingPeoplePanel && !lookingPeoplePanel.hidden && lastLookingPersonTarget) {
           setLookingPerson(lastLookingPersonTarget);
         }
       });
     });
+    syncLandingAuthActions();
 
     window.addEventListener("resize", () => {
       if (window.innerWidth > 1024) {

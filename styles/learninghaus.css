@@ -16576,6 +16576,19 @@ body.quiz-flow-open .social-corner-fab {
   width: 100%;
 }
 
+.hero__welcome {
+  margin: 0 0 2px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1f4d28;
+  letter-spacing: -0.01em;
+}
+
+.hero__welcome[hidden],
+.hero__actions .button[hidden] {
+  display: none !important;
+}
+
 .hero__actions .button {
   width: 266px;
   height: 54px;

@@ -4761,13 +4761,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
-        ["learninghaus:language-changed", "learninghaus:profile-updated", "learninghaus:pixel-cat-updated"].forEach((evName) => {
+        const syncLandingAuthActions = () => {
+            const signedIn = Boolean(window.LearningHausSocial?.hasAccount?.());
+            const welcomeEl = document.querySelector("[data-hero-welcome]");
+            const signinBtn = document.getElementById("signin");
+            const createBtn = document.getElementById("create-account");
+            if (signinBtn)
+                signinBtn.hidden = signedIn;
+            if (createBtn)
+                createBtn.hidden = signedIn;
+            if (welcomeEl) {
+                if (signedIn) {
+                    const userName = String(window.LearningHausProfile?.getProfile?.()?.name || "").trim() || LearningHausI18n.t("Learner", "ผู้เรียน");
+                    welcomeEl.textContent = LearningHausI18n.t(`Welcome back, ${userName}!`, `ยินดีต้อนรับกลับมา, ${userName}!`);
+                    welcomeEl.hidden = false;
+                }
+                else {
+                    welcomeEl.textContent = "";
+                    welcomeEl.hidden = true;
+                }
+            }
+        };
+        ["learninghaus:language-changed", "learninghaus:profile-updated", "learninghaus:pixel-cat-updated", "learninghaus:social-session"].forEach((evName) => {
             window.addEventListener(evName, () => {
+                syncLandingAuthActions();
                 if (lookingPeoplePanel && !lookingPeoplePanel.hidden && lastLookingPersonTarget) {
                     setLookingPerson(lastLookingPersonTarget);
                 }
             });
         });
+        syncLandingAuthActions();
         window.addEventListener("resize", () => {
             if (window.innerWidth > 1024) {
                 document.querySelectorAll(".home-sidebar.is-menu-open, .quiz-sidebar.is-menu-open").forEach((sidebar) => {
