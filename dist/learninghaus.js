@@ -26529,6 +26529,11 @@ var LearningHausPartyArena;
                 applyRoomSnapshot(res.data.room);
                 startRoomLoops();
             }
+            else if (res.status === 401) {
+                showToast(t("Session expired. Please sign in again to create a room.", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อสร้างห้อง"));
+                LearningHausPartyArena.close();
+                window.dispatchEvent(new CustomEvent("learninghaus:change-account"));
+            }
             else {
                 showToast(res.data?.error || t("Could not create room", "เปิดห้องไม่สำเร็จ"));
             }
@@ -26548,6 +26553,11 @@ var LearningHausPartyArena;
                 lastRenderedRoomKey = "";
                 applyRoomSnapshot(res.data.room);
                 startRoomLoops();
+            }
+            else if (res.status === 401) {
+                showToast(t("Session expired. Please sign in again to join a room.", "เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่อีกครั้งเพื่อเข้าห้อง"));
+                LearningHausPartyArena.close();
+                window.dispatchEvent(new CustomEvent("learninghaus:change-account"));
             }
             else {
                 showToast(res.data?.error || t("Room not found", "ไม่พบรหัสห้องนี้"));
