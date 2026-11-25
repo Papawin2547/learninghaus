@@ -1,6 +1,6 @@
 // เซิร์ฟเวอร์กลางของ LearningHaus: บัญชี เพื่อน แชท และคะแนนด่านใช้ฐานข้อมูลเดียวกัน
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, mkdirSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomBytes, scryptSync, timingSafeEqual, createHash } from 'node:crypto';
@@ -10,7 +10,120 @@ const codeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const siteRoot = resolve(codeRoot, '..');
 const dataRoot = process.env.LEARNINGHAUS_DATA_DIR ? resolve(process.env.LEARNINGHAUS_DATA_DIR) : join(codeRoot, 'server', 'data');
 mkdirSync(dataRoot, { recursive: true });
-const db = new DatabaseSync(process.env.LEARNINGHAUS_DB_PATH || join(dataRoot, 'learninghaus.sqlite'));
+const dbPath = process.env.LEARNINGHAUS_DB_PATH || join(dataRoot, 'learninghaus.sqlite');
+
+// ── Turso Cloud SQLite Snapshot Persistence (survives Render Free redeploys & sleeps) ──
+const rawTursoUrl = String(process.env.TURSO_DATABASE_URL || '').trim();
+const tursoAuthToken = String(process.env.TURSO_AUTH_TOKEN || '').trim();
+const tursoPipelineUrl =
+  !process.env.LEARNINGHAUS_DB_PATH && rawTursoUrl && tursoAuthToken
+    ? `${rawTursoUrl.replace(/^libsql:\/\//i, 'https://').replace(/\/+$/, '')}/v2/pipeline`
+    : '';
+
+const tursoExec = async (requests) => {
+  const res = await fetch(tursoPipelineUrl, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${tursoAuthToken}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ requests: [...requests, { type: 'close' }] })
+  });
+  const payload = await res.json().catch(() => null);
+  if (!res.ok || !payload?.results) throw new Error(`Turso HTTP ${res.status}`);
+  for (const r of payload.results) {
+    if (r.type === 'error') throw new Error(r.error?.message || 'Turso SQL error');
+  }
+  return payload.results;
+};
+
+if (tursoPipelineUrl) {
+  try {
+    await tursoExec([
+      {
+        type: 'execute',
+        stmt: { sql: 'CREATE TABLE IF NOT EXISTS lh_db_chunks (idx INTEGER PRIMARY KEY, data TEXT NOT NULL, updated_at TEXT NOT NULL)' }
+      }
+    ]);
+    const results = await tursoExec([
+      { type: 'execute', stmt: { sql: 'SELECT idx, data FROM lh_db_chunks ORDER BY idx ASC' } }
+    ]);
+    const rows = results[0]?.response?.result?.rows || [];
+    if (rows.length > 0) {
+      const b64 = rows.map((row) => String(row[1]?.value || '')).join('');
+      const buf = Buffer.from(b64, 'base64');
+      if (buf.length > 100 && buf.subarray(0, 15).toString('utf8') === 'SQLite format 3') {
+        for (const suffix of ['-wal', '-shm']) {
+          if (existsSync(dbPath + suffix)) {
+            try { unlinkSync(dbPath + suffix); } catch { /* ignore */ }
+          }
+        }
+        writeFileSync(dbPath, buf);
+        console.log(`[Turso] Restored persistent SQLite database from cloud (${buf.length} bytes).`);
+      }
+    } else {
+      console.log('[Turso] Connected (no cloud snapshot yet; will sync on first write).');
+    }
+  } catch (err) {
+    console.error('[Turso] Startup restore warning:', err?.message || err);
+  }
+}
+
+const db = new DatabaseSync(dbPath);
+
+let tursoSyncTimer = null;
+let tursoSyncInFlight = false;
+let tursoSyncDirty = false;
+const flushTursoSnapshot = async () => {
+  if (!tursoPipelineUrl) return;
+  if (tursoSyncInFlight) {
+    tursoSyncDirty = true;
+    return;
+  }
+  tursoSyncInFlight = true;
+  tursoSyncDirty = false;
+  try {
+    db.exec('PRAGMA wal_checkpoint(TRUNCATE);');
+    const b64 = readFileSync(dbPath).toString('base64');
+    const CHUNK = 180000;
+    const ts = new Date().toISOString();
+    const reqs = [
+      { type: 'execute', stmt: { sql: 'BEGIN' } },
+      { type: 'execute', stmt: { sql: 'DELETE FROM lh_db_chunks' } }
+    ];
+    for (let i = 0, idx = 0; i < b64.length; i += CHUNK, idx += 1) {
+      reqs.push({
+        type: 'execute',
+        stmt: {
+          sql: 'INSERT INTO lh_db_chunks(idx, data, updated_at) VALUES(?, ?, ?)',
+          args: [
+            { type: 'integer', value: String(idx) },
+            { type: 'text', value: b64.slice(i, i + CHUNK) },
+            { type: 'text', value: ts }
+          ]
+        }
+      });
+    }
+    reqs.push({ type: 'execute', stmt: { sql: 'COMMIT' } });
+    await tursoExec(reqs);
+  } catch (err) {
+    console.error('[Turso] Cloud sync warning:', err?.message || err);
+  } finally {
+    tursoSyncInFlight = false;
+    if (tursoSyncDirty) {
+      tursoSyncDirty = false;
+      void flushTursoSnapshot();
+    }
+  }
+};
+const scheduleTursoSync = () => {
+  if (!tursoPipelineUrl) return;
+  if (tursoSyncTimer) clearTimeout(tursoSyncTimer);
+  tursoSyncTimer = setTimeout(() => {
+    tursoSyncTimer = null;
+    void flushTursoSnapshot();
+  }, 1500);
+};
 db.exec(`
   PRAGMA foreign_keys = ON;
   PRAGMA journal_mode = WAL;
@@ -973,6 +1086,7 @@ async function api(req, res, url) {
         url: input[urlKey] === undefined ? user[`${key}_url`] : String(input[urlKey]).trim() }];
     }));
     const validImage = avatar === ''
+      || /^https:\/\/[^\s]{1,500}$/i.test(avatar)
       || (/^data:image\/(?:png|jpeg|webp|gif|svg\+xml);base64,[A-Za-z0-9+/=]+$/.test(avatar) && avatar.length <= 2100000);
     const validCatData = catConfig.length <= 120000 && catPresets.length <= 500000;
     const validContacts = Object.values(contacts).every(({name,url}) => name.length <= 80 && url.length <= 500 && Boolean(name) === Boolean(url) && (!url || /^https?:\/\/[^\s]+$/i.test(url)));
@@ -1435,11 +1549,23 @@ function staticFile(req, res, url) {
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
-    if (url.pathname.startsWith('/api/')) await api(req,res,url);
-    else staticFile(req,res,url);
+    if (url.pathname.startsWith('/api/')) {
+      await api(req, res, url);
+      if (req.method !== 'GET' && req.method !== 'HEAD' || url.pathname === '/api/auth/google/callback') {
+        scheduleTursoSync();
+      }
+    } else {
+      staticFile(req, res, url);
+    }
   } catch (error) {
     console.error(error);
     if (!res.headersSent) fail(res, error.message === 'Request is too large.' ? 413 : 400, error.message || 'Request failed.');
     else res.end();
   }
 }).listen(port, host, () => console.log(`LearningHaus server: http://127.0.0.1:${port}/Code/learninghaus.html`));
+
+for (const sig of ['SIGTERM', 'SIGINT']) {
+  process.on(sig, () => {
+    void flushTursoSnapshot().finally(() => process.exit(0));
+  });
+}
