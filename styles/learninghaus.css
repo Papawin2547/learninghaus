@@ -14428,8 +14428,13 @@ body.quiz-flow-open .social-corner-fab {
 }
 .learn-explore-card:hover {
   transform: translateY(-2px);
-  border-color: var(--color-button);
-  box-shadow: 0 11px 24px rgba(24, 52, 29, 0.1);
+  border-color: #d2e0d4;
+  box-shadow: 0 10px 22px rgba(24, 52, 29, 0.08);
+}
+#home-view:focus,
+#quiz-view:focus,
+.learn-explore-card:focus {
+  outline: none;
 }
 .learn-explore-card__cover {
   position: relative;
