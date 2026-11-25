@@ -974,7 +974,7 @@ async function api(req, res, url) {
     return json(res, 200, { user: accountUser(existing) });
   }
   const user = currentUser(req);
-  if (!user) return fail(res, 401, 'Sign in to use friends, chat and shared leaderboards.');
+  if (!user) return fail(res, 401, 'Please sign in again to continue.');
   if (url.pathname === '/api/me' && method === 'GET') return json(res, 200, { user: accountUser(user) });
   if (url.pathname === '/api/classes' && method === 'GET') {
     const rows = db.prepare('SELECT course_id, class_code, owner_user_id, owner_name, title, payload_json, updated_at FROM custom_classes ORDER BY updated_at DESC LIMIT 200').all();
