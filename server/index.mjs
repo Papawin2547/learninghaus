@@ -8,7 +8,7 @@ import { DatabaseSync } from 'node:sqlite';
 
 const codeRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const siteRoot = resolve(codeRoot, '..');
-const dataRoot = join(codeRoot, 'server', 'data');
+const dataRoot = process.env.LEARNINGHAUS_DATA_DIR ? resolve(process.env.LEARNINGHAUS_DATA_DIR) : join(codeRoot, 'server', 'data');
 mkdirSync(dataRoot, { recursive: true });
 const db = new DatabaseSync(process.env.LEARNINGHAUS_DB_PATH || join(dataRoot, 'learninghaus.sqlite'));
 db.exec(`

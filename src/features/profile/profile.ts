@@ -502,7 +502,7 @@
           if (account.featuredAchievements !== undefined) {
             profile.featuredAchievements = normalizeFeatured(account.featuredAchievements);
           }
-          profile.totalXp = Math.max(Number(profile.totalXp) || 0, Number(account.totalXp) || 0);
+          profile.totalXp = Math.max(0, Number(account.totalXp) || 0);
           profile.about = account.about || "";
           (["facebook", "instagram", "x"] as ContactKey[]).forEach((key) => {
             const accountRecord = account as unknown as Record<string, string | undefined>;
@@ -511,6 +511,7 @@
           });
           profile.accountState = account.accountState || "active";
           renderProfile();
+          saveProfile();
           notifyProfileUpdated();
         }
       };

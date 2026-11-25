@@ -876,8 +876,7 @@ namespace LearningHausSocial {
       return { handled: true, success: false };
     }
     try {
-      const savedName = window.LearningHausProfile?.getProfile?.().name;
-      const name = savedName && savedName !== "TONOAK" ? savedName : email.split("@")[0];
+      const name = email.split("@")[0];
       const result = await request<{ user: Person }>(kind === "signup" ? "/api/register" : "/api/login", "POST", {
         email,
         password,
