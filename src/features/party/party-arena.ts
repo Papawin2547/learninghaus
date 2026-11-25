@@ -1582,6 +1582,29 @@ namespace LearningHausPartyArena {
     syncPartyBgmForState();
   };
 
+  export const joinRoomByCode = async (rawCode: string): Promise<{ ok: boolean; error?: string }> => {
+    const code = rawCode.trim().toUpperCase().replace(/\s+/g, "");
+    if (code.length < 4) return { ok: false, error: t("Invalid room code.", "รหัสห้องไม่ถูกต้อง") };
+    await ensureUserSessionIfNeeded();
+    const res = await apiFetch<{ room?: PartyRoomState }>("/api/party/rooms/join", {
+      method: "POST",
+      body: JSON.stringify({ code })
+    });
+    if (res.ok && res.data?.room) {
+      overlayEl = document.querySelector<HTMLElement>("[data-party-arena]");
+      if (!overlayEl) return { ok: false, error: t("Party Arena unavailable.", "ไม่พบหน้าจอ Party Arena") };
+      overlayEl.hidden = false;
+      screenMode = "room";
+      lastRenderedRoomKey = "";
+      applyRoomSnapshot(res.data.room);
+      startRoomLoops();
+      window.LearningHausSettings?.playTone?.("ready");
+      syncPartyBgmForState();
+      return { ok: true };
+    }
+    return { ok: false, error: res.data?.error || t("Room not found", "ไม่พบรหัสห้องนี้") };
+  };
+
   export const close = (): void => {
     stopLoops();
     if (overlayEl) overlayEl.hidden = true;

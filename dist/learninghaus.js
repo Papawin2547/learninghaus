@@ -3516,31 +3516,8 @@ var LearningHausLeaderboardData;
         4: "Chapter 1 · Foundations & Scope · Stage 4",
         7: "Chapter 1 · Foundations & Scope · Stage 7"
     };
-    LearningHausLeaderboardData.entries = {
-        1: [
-            { name: "KITTYCAT", avatar: "", score: 950, correct: 10, total: 10, timeSeconds: 18, totalXp: 880, about: "Interactive learning explorer and quiz speedrun champion across all subjects.", message: "THE GAME IS VERY EASY FOR ME HAHAHA !" },
-            { name: "FOXXIE", avatar: "", score: 910, correct: 9, total: 10, timeSeconds: 16, totalXp: 760, about: "Curious learner collecting every pixel cat badge and prop!", message: "Always learning something new!" },
-            { name: "GG1", avatar: "", score: 875, correct: 9, total: 10, timeSeconds: 29, totalXp: 640, about: "Creating interactive slides, video lessons, and fun classroom quizzes.", message: "Keep going and have fun learning!" },
-            { name: "NekoNova", avatar: "", score: 820, correct: 8, total: 10, timeSeconds: 24, totalXp: 520, about: "Mastering new skills one lesson and course quest at a time.", message: "Building new skills every day." },
-            { name: "TONOAK", avatar: "", score: 760, correct: 8, total: 10, timeSeconds: 42, totalXp: 160, message: "Ready for the next chapter!" }
-        ],
-        2: [
-            { name: "FOXXIE", avatar: "", score: 965, correct: 10, total: 10, timeSeconds: 14, totalXp: 760, about: "Curious learner collecting every pixel cat badge and prop!" },
-            { name: "KITTYCAT", avatar: "", score: 900, correct: 9, total: 10, timeSeconds: 19, totalXp: 880, about: "Interactive learning explorer and quiz speedrun champion across all subjects." },
-            { name: "PixelPaws", avatar: "", score: 835, correct: 8, total: 10, timeSeconds: 20, totalXp: 520, about: "Pixel art & UX design fan sharing visual slide decks." },
-            { name: "LawWhisker", avatar: "", score: 710, correct: 7, total: 10, timeSeconds: 31, totalXp: 340, about: "Exploring technology, policy, and coding courses." }
-        ],
-        4: [
-            { name: "GG1", avatar: "", score: 930, correct: 10, total: 10, timeSeconds: 22, totalXp: 640, about: "Creating interactive slides, video lessons, and fun classroom quizzes." },
-            { name: "NekoNova", avatar: "", score: 845, correct: 9, total: 10, timeSeconds: 34, totalXp: 520, about: "Mastering new skills one lesson and course quest at a time." },
-            { name: "Catonix", avatar: "", score: 785, correct: 8, total: 10, timeSeconds: 39, totalXp: 410, about: "Completing daily quests and custom classroom challenges." }
-        ],
-        7: [
-            { name: "KITTYCAT", avatar: "", score: 990, correct: 10, total: 10, timeSeconds: 11, totalXp: 880, about: "Interactive learning explorer and quiz speedrun champion across all subjects." },
-            { name: "GG1", avatar: "", score: 880, correct: 9, total: 10, timeSeconds: 27, totalXp: 640, about: "Creating interactive slides, video lessons, and fun classroom quizzes." },
-            { name: "FOXXIE", avatar: "", score: 800, correct: 8, total: 10, timeSeconds: 21, totalXp: 760, about: "Curious learner collecting every pixel cat badge and prop!" }
-        ]
-    };
+    // เริ่มต้นแบบว่างเปล่าเพื่อให้แสดงเฉพาะคะแนนจากผู้ใช้งานจริงในระบบ
+    LearningHausLeaderboardData.entries = {};
 })(LearningHausLeaderboardData || (LearningHausLeaderboardData = {}));
 // ส่วนนี้ทำหน้าที่: เก็บ SVG ไอคอน Lucide (https://lucide.dev/icons/) สำหรับส่วนควบคุม UI
 // ใช้ SVG มาตรฐานจากชุดไอคอน Lucide ในเครื่องเพื่อให้ไอคอนทั้งหมดเป็นชุดเดียวกันและทำงานได้แม้ไม่มีการเชื่อมต่ออินเทอร์เน็ต
@@ -7444,56 +7421,12 @@ var LearningHausLearnHub;
         if (!/^[A-Z0-9-]{4,24}$/.test(code)) {
             return {
                 ok: false,
-                message: t("Use letters, numbers, or hyphens only (e.g. DFK-404).", "ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และขีดกลาง (เช่น DFK-404)")
+                message: t("Use letters, numbers, or hyphens only (e.g. EUAI-2026 or P-XXXXX).", "ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และขีดกลาง (เช่น EUAI-2026 หรือ P-XXXXX)")
             };
         }
-        const joinedClass = {
-            id: `joined-${code.toLowerCase()}-${Date.now().toString(36)}`,
-            classCode: code,
-            title: `Classroom · ${code}`,
-            category: "law",
-            categoryEn: "AI Law & Policy",
-            categoryTh: "กฎหมายและนโยบาย AI",
-            suggested: false,
-            ratio: "landscape",
-            ratioEn: "Landscape 16:9",
-            ratioTh: "ปกแนวนอน 16:9",
-            creator: t("Invited Class", "ห้องเรียนที่เชิญ"),
-            role: "enrolled",
-            isCustom: true,
-            layoutStyle: "fan",
-            cardRatio: "3/4",
-            cardWidth: 241,
-            passPercent: 80,
-            gradient: "linear-gradient(135deg, #214e3a 0%, #4d8b55 100%)",
-            iconName: "layers",
-            descriptionEn: `Joined with invite code ${code}. Open this class to study chapters and enter its Course Quiz.`,
-            descriptionTh: `เข้าร่วมด้วยรหัสเชิญ ${code} เปิดห้องเรียนเพื่อดูบทเรียนและเข้าสู่หน้า Quiz ของคลาสนี้`,
-            chapters: [
-                { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "lesson-assets/ext/chapters/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-                { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "lesson-assets/ext/chapters/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-                { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "lesson-assets/ext/chapters/Chapter3.png", mediaType: "reading" }
-            ]
-        };
-        myClassesState.customClasses.unshift(joinedClass);
-        saveMyClasses();
-        window.LearningHausQuests?.enroll?.(joinedClass.id);
-        window.dispatchEvent(new CustomEvent("learninghaus:library-updated", { detail: { courseId: joinedClass.id } }));
-        window.dispatchEvent(new CustomEvent("learninghaus:notify", {
-            detail: {
-                kind: "class_member_joined",
-                important: false,
-                titleEn: `Joined "${joinedClass.title}"`,
-                titleTh: `เข้าห้องเรียน "${joinedClass.title}" แล้ว`,
-                bodyEn: `Entered classroom using invite code ${code}.`,
-                bodyTh: `เข้าร่วมห้องเรียนด้วยรหัสเชิญ ${code} เรียบร้อยแล้ว`,
-                meta: { courseId: joinedClass.id, courseTitle: joinedClass.title, classCode: code }
-            }
-        }));
         return {
-            ok: true,
-            course: joinedClass,
-            message: t(`Joined classroom with code ${code}!`, `เข้าร่วมห้องเรียนด้วยรหัส ${code} สำเร็จ`)
+            ok: false,
+            message: t(`Code "${code}" was not found. Make sure the class or Party Arena room has been created.`, `ไม่พบรหัส "${code}" ในระบบ กรุณาตรวจสอบว่ามีผู้สร้างห้องเรียนหรือห้องปาร์ตี้นี้แล้ว`)
         };
     };
     LearningHausLearnHub.getPendingJoinRequests = () => {
@@ -10241,21 +10174,27 @@ var LearningHausLearnHub;
                 joinInput.focus();
             }
         });
-        joinForm?.addEventListener("submit", (event) => {
+        joinForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
-            const result = LearningHausLearnHub.joinClassByCode(joinInput?.value || "");
-            if (!result.ok) {
-                if (joinMsg) {
-                    joinMsg.textContent = result.message;
-                    joinMsg.hidden = false;
-                }
+            const rawCode = joinInput?.value || "";
+            const result = LearningHausLearnHub.joinClassByCode(rawCode);
+            if (result.ok) {
+                closeJoinModal();
+                setRoleFilter("all");
+                setSubview("classes");
+                renderCatalog();
+                showToast(result.message);
                 return;
             }
-            closeJoinModal();
-            setRoleFilter("all");
-            setSubview("classes");
-            renderCatalog();
-            showToast(result.message);
+            const partyResult = await window.LearningHausPartyArena?.joinRoomByCode?.(rawCode);
+            if (partyResult?.ok) {
+                closeJoinModal();
+                return;
+            }
+            if (joinMsg) {
+                joinMsg.textContent = result.message;
+                joinMsg.hidden = false;
+            }
         });
         // CREATE NEW CLASS MODAL interactions
         createSwatches?.addEventListener("click", (event) => {
@@ -10800,30 +10739,7 @@ Object.assign(window, { LearningHausLearnHub });
             }
             return window.LearningHausPixelCat?.getNpcAvatarDataUrl?.(author) || "";
         };
-        const comments = chapterData.map((_, index) => index === 0
-            ? [
-                {
-                    author: "TONOAK",
-                    avatar: "",
-                    text: "I just found out that it’s illegal.",
-                    liked: false,
-                    replies: [
-                        { author: "NekoNova", avatar: "", text: "Which part of the lesson surprised you most?", mine: false },
-                        { author: "TONOAK", avatar: "", text: "I didn't realize there were so many rules to check before using AI.", mine: true }
-                    ]
-                },
-                {
-                    author: "NekoNova",
-                    avatar: "",
-                    text: "I’m so glad someone created a platform like this.",
-                    liked: false,
-                    replies: [
-                        { author: "TONOAK", avatar: "", text: "Same here! The short lessons are easy to follow.", mine: true },
-                        { author: "NekoNova", avatar: "", text: "I’m going to watch the next chapter too.", mine: false }
-                    ]
-                }
-            ]
-            : []);
+        const comments = chapterData.map(() => []);
         const VIDEO_WATCHED_KEY = "learninghaus.videoWatched.v1";
         const readWatchedMap = () => LearningHausAccountStorage.readJson(VIDEO_WATCHED_KEY, {});
         const isChapterVideoFinished = (chapter) => Boolean(readWatchedMap()[`eu-ai-act:${chapter}`]);
@@ -26508,6 +26424,30 @@ var LearningHausPartyArena;
             renderHub();
         }
         syncPartyBgmForState();
+    };
+    LearningHausPartyArena.joinRoomByCode = async (rawCode) => {
+        const code = rawCode.trim().toUpperCase().replace(/\s+/g, "");
+        if (code.length < 4)
+            return { ok: false, error: t("Invalid room code.", "รหัสห้องไม่ถูกต้อง") };
+        await ensureUserSessionIfNeeded();
+        const res = await apiFetch("/api/party/rooms/join", {
+            method: "POST",
+            body: JSON.stringify({ code })
+        });
+        if (res.ok && res.data?.room) {
+            overlayEl = document.querySelector("[data-party-arena]");
+            if (!overlayEl)
+                return { ok: false, error: t("Party Arena unavailable.", "ไม่พบหน้าจอ Party Arena") };
+            overlayEl.hidden = false;
+            screenMode = "room";
+            lastRenderedRoomKey = "";
+            applyRoomSnapshot(res.data.room);
+            startRoomLoops();
+            window.LearningHausSettings?.playTone?.("ready");
+            syncPartyBgmForState();
+            return { ok: true };
+        }
+        return { ok: false, error: res.data?.error || t("Room not found", "ไม่พบรหัสห้องนี้") };
     };
     LearningHausPartyArena.close = () => {
         stopLoops();

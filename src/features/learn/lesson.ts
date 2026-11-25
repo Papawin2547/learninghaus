@@ -172,32 +172,7 @@
       return window.LearningHausPixelCat?.getNpcAvatarDataUrl?.(author) || "";
     };
 
-    const comments: LessonComment[][] = chapterData.map((_, index) =>
-      index === 0
-        ? [
-            {
-              author: "TONOAK",
-              avatar: "",
-              text: "I just found out that it’s illegal.",
-              liked: false,
-              replies: [
-                { author: "NekoNova", avatar: "", text: "Which part of the lesson surprised you most?", mine: false },
-                { author: "TONOAK", avatar: "", text: "I didn't realize there were so many rules to check before using AI.", mine: true }
-              ]
-            },
-            {
-              author: "NekoNova",
-              avatar: "",
-              text: "I’m so glad someone created a platform like this.",
-              liked: false,
-              replies: [
-                { author: "TONOAK", avatar: "", text: "Same here! The short lessons are easy to follow.", mine: true },
-                { author: "NekoNova", avatar: "", text: "I’m going to watch the next chapter too.", mine: false }
-              ]
-            }
-          ]
-        : []
-    );
+    const comments: LessonComment[][] = chapterData.map(() => []);
 
     const VIDEO_WATCHED_KEY = "learninghaus.videoWatched.v1";
     const readWatchedMap = (): Record<string, boolean> =>

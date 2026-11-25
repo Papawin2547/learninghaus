@@ -96,6 +96,7 @@ interface Window {
   LearningHausPartyArena?: {
     open: () => Promise<void>;
     close: () => void;
+    joinRoomByCode?: (rawCode: string) => Promise<{ ok: boolean; error?: string }>;
   };
   LearningHausSettings?: typeof LearningHausSettings;
   LearningHausSocial?: typeof LearningHausSocial;

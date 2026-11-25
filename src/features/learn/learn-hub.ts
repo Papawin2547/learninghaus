@@ -1437,61 +1437,16 @@ namespace LearningHausLearnHub {
     if (!/^[A-Z0-9-]{4,24}$/.test(code)) {
       return {
         ok: false,
-        message: t("Use letters, numbers, or hyphens only (e.g. DFK-404).", "ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และขีดกลาง (เช่น DFK-404)")
+        message: t("Use letters, numbers, or hyphens only (e.g. EUAI-2026 or P-XXXXX).", "ใช้ได้เฉพาะตัวอักษรภาษาอังกฤษ ตัวเลข และขีดกลาง (เช่น EUAI-2026 หรือ P-XXXXX)")
       };
     }
 
-    const joinedClass: CourseItem = {
-      id: `joined-${code.toLowerCase()}-${Date.now().toString(36)}`,
-      classCode: code,
-      title: `Classroom · ${code}`,
-      category: "law",
-      categoryEn: "AI Law & Policy",
-      categoryTh: "กฎหมายและนโยบาย AI",
-      suggested: false,
-      ratio: "landscape",
-      ratioEn: "Landscape 16:9",
-      ratioTh: "ปกแนวนอน 16:9",
-      creator: t("Invited Class", "ห้องเรียนที่เชิญ"),
-      role: "enrolled",
-      isCustom: true,
-      layoutStyle: "fan",
-      cardRatio: "3/4",
-      cardWidth: 241,
-      passPercent: 80,
-      gradient: "linear-gradient(135deg, #214e3a 0%, #4d8b55 100%)",
-      iconName: "layers",
-      descriptionEn: `Joined with invite code ${code}. Open this class to study chapters and enter its Course Quiz.`,
-      descriptionTh: `เข้าร่วมด้วยรหัสเชิญ ${code} เปิดห้องเรียนเพื่อดูบทเรียนและเข้าสู่หน้า Quiz ของคลาสนี้`,
-      chapters: [
-        { title: "Class Orientation & Key Terms", summaryEn: "Core principles and classroom syllabus.", summaryTh: "แนะนำห้องเรียนและคำศัพท์สำคัญ", points: 100, cover: "lesson-assets/ext/chapters/Chapter1.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-        { title: "Guided Case Scenarios", summaryEn: "Hands-on practice with real-world cases.", summaryTh: "ฝึกวิเคราะห์กรณีศึกษาจริง", points: 100, cover: "lesson-assets/ext/chapters/Chapter2.png", mediaType: "youtube", youtubeUrl: "https://www.youtube.com/watch?v=aircAruvnKk" },
-        { title: "Review & Course Quiz Prep", summaryEn: "Recap key concepts before taking the quiz.", summaryTh: "สรุปเนื้อหาก่อนเข้าสู่หน้า Quiz", points: 100, cover: "lesson-assets/ext/chapters/Chapter3.png", mediaType: "reading" }
-      ]
-    };
-
-    myClassesState.customClasses.unshift(joinedClass);
-    saveMyClasses();
-    window.LearningHausQuests?.enroll?.(joinedClass.id);
-    window.dispatchEvent(new CustomEvent("learninghaus:library-updated", { detail: { courseId: joinedClass.id } }));
-    window.dispatchEvent(
-      new CustomEvent("learninghaus:notify", {
-        detail: {
-          kind: "class_member_joined",
-          important: false,
-          titleEn: `Joined "${joinedClass.title}"`,
-          titleTh: `เข้าห้องเรียน "${joinedClass.title}" แล้ว`,
-          bodyEn: `Entered classroom using invite code ${code}.`,
-          bodyTh: `เข้าร่วมห้องเรียนด้วยรหัสเชิญ ${code} เรียบร้อยแล้ว`,
-          meta: { courseId: joinedClass.id, courseTitle: joinedClass.title, classCode: code }
-        }
-      })
-    );
-
     return {
-      ok: true,
-      course: joinedClass,
-      message: t(`Joined classroom with code ${code}!`, `เข้าร่วมห้องเรียนด้วยรหัส ${code} สำเร็จ`)
+      ok: false,
+      message: t(
+        `Code "${code}" was not found. Make sure the class or Party Arena room has been created.`,
+        `ไม่พบรหัส "${code}" ในระบบ กรุณาตรวจสอบว่ามีผู้สร้างห้องเรียนหรือห้องปาร์ตี้นี้แล้ว`
+      )
     };
   };
 
@@ -4316,21 +4271,27 @@ namespace LearningHausLearnHub {
       }
     });
 
-    joinForm?.addEventListener("submit", (event) => {
+    joinForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const result = joinClassByCode(joinInput?.value || "");
-      if (!result.ok) {
-        if (joinMsg) {
-          joinMsg.textContent = result.message;
-          joinMsg.hidden = false;
-        }
+      const rawCode = joinInput?.value || "";
+      const result = joinClassByCode(rawCode);
+      if (result.ok) {
+        closeJoinModal();
+        setRoleFilter("all");
+        setSubview("classes");
+        renderCatalog();
+        showToast(result.message);
         return;
       }
-      closeJoinModal();
-      setRoleFilter("all");
-      setSubview("classes");
-      renderCatalog();
-      showToast(result.message);
+      const partyResult = await window.LearningHausPartyArena?.joinRoomByCode?.(rawCode);
+      if (partyResult?.ok) {
+        closeJoinModal();
+        return;
+      }
+      if (joinMsg) {
+        joinMsg.textContent = result.message;
+        joinMsg.hidden = false;
+      }
     });
 
     // CREATE NEW CLASS MODAL interactions

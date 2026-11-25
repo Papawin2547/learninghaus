@@ -1706,29 +1706,29 @@
       <div class="learn-modal-backdrop" data-learn-join-modal hidden>
         <form class="learn-dialog-card" data-learn-join-form role="dialog" aria-modal="true" aria-labelledby="learn-join-title">
           <div class="learn-dialog-card__head">
-            <h3 id="learn-join-title" data-i18n-en="Join with Class Code" data-i18n-th="กรอกรหัสเข้าห้องเรียน">Join with Class Code</h3>
+            <h3 id="learn-join-title" data-i18n-en="Join with Class / Party Code" data-i18n-th="กรอกรหัสห้องเรียน หรือ ห้องปาร์ตี้">Join with Class / Party Code</h3>
             <button class="learn-dialog-card__close" type="button" data-learn-join-close aria-label="Close">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
           </div>
-          <p data-i18n-en="Enter a Class Code from your instructor or choose a public code below to add the class directly to My Classes." data-i18n-th="กรอกรหัสห้องเรียนจากผู้สอน หรือคลิกรหัสตัวอย่างด้านล่างเพื่อเพิ่มห้องเรียนเข้าสู่หน้าห้องเรียนของฉัน">Enter a Class Code from your instructor or choose a public code below to add the class directly to My Classes.</p>
+          <p data-i18n-en="Enter a Class Code from your instructor or a Quick Party Arena room code (e.g. P-XXXXX) to join right away." data-i18n-th="กรอกรหัสห้องเรียนจากผู้สอน หรือรหัสห้อง Quick Party Arena (เช่น P-XXXXX) เพื่อเข้าร่วมได้ทันที">Enter a Class Code from your instructor or a Quick Party Arena room code (e.g. P-XXXXX) to join right away.</p>
           <div class="learn-dialog-field">
-            <label for="learn-join-code-input" data-i18n-en="Class Code" data-i18n-th="รหัสห้องเรียน">Class Code</label>
-            <input id="learn-join-code-input" type="text" data-learn-join-input placeholder="e.g. PY-101, UX-204, BIZ-301" autocomplete="off" spellcheck="false" maxlength="24">
+            <label for="learn-join-code-input" data-i18n-en="Class / Party Code" data-i18n-th="รหัสห้องเรียน หรือ รหัสห้องปาร์ตี้">Class / Party Code</label>
+            <input id="learn-join-code-input" type="text" data-learn-join-input placeholder="e.g. EUAI-2026 or P-XXXXX" autocomplete="off" spellcheck="false" maxlength="24">
           </div>
           <div class="learn-join-samples">
             <span class="learn-join-samples__label" data-i18n-en="Quick codes:" data-i18n-th="รหัสตัวอย่าง:">Quick codes:</span>
+            <button type="button" class="learn-code-chip" data-learn-fill-code="EUAI-2026">EUAI-2026</button>
             <button type="button" class="learn-code-chip" data-learn-fill-code="PY-101">PY-101</button>
             <button type="button" class="learn-code-chip" data-learn-fill-code="UX-204">UX-204</button>
             <button type="button" class="learn-code-chip" data-learn-fill-code="BIZ-301">BIZ-301</button>
             <button type="button" class="learn-code-chip" data-learn-fill-code="ENG-105">ENG-105</button>
-            <button type="button" class="learn-code-chip" data-learn-fill-code="EUAI-2026">EUAI-2026</button>
           </div>
           <p class="learn-dialog-msg" data-learn-join-msg hidden></p>
           <div class="learn-dialog-card__foot">
             <button class="learn-hub__btn-soft" type="button" data-learn-join-close data-i18n-en="Cancel" data-i18n-th="ยกเลิก">Cancel</button>
             <button class="learn-hub__btn-primary" type="submit">
-              <span data-i18n-en="Join Class" data-i18n-th="เข้าร่วมห้องเรียน">Join Class</span>
+              <span data-i18n-en="Join" data-i18n-th="เข้าร่วม">Join</span>
             </button>
           </div>
         </form>
