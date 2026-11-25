@@ -24000,9 +24000,33 @@ var LearningHausMiniGameEngine;
         if (level.kind === "matching") {
             const rightOrder = deterministicShuffle(level.pairs, 2);
             let selectedLeft = null;
+            let selectedRight = null;
             const matched = new Set();
             const missedIds = new Set();
             let wrongPair = null;
+            const tryPair = (lid, rid) => {
+                if (rid === lid) {
+                    matched.add(rid);
+                    selectedLeft = null;
+                    selectedRight = null;
+                    wrongPair = null;
+                    onFeedback(true);
+                    renderFn();
+                    if (matched.size === level.pairs.length) {
+                        const reviews = buildReviews(false);
+                        const correctCount = reviews.filter((r) => r.isCorrect).length;
+                        schedule(() => emitDone({ correctCount, totalCount: level.pairs.length, reviews }), 460);
+                    }
+                }
+                else {
+                    missedIds.add(lid);
+                    wrongPair = [lid, rid];
+                    selectedLeft = null;
+                    selectedRight = null;
+                    onFeedback(false);
+                    renderFn();
+                }
+            };
             const buildReviews = (timedOut = false) => level.pairs.map((p) => {
                 const ok = matched.has(p.id);
                 const clean = ok && !missedIds.has(p.id);
@@ -24037,8 +24061,9 @@ var LearningHausMiniGameEngine;
                 <span class="mg-col-label">${bi(level.rightLabel)}</span>
                 ${rightOrder
                     .map((p) => `
-                  <button class="mg-match-item${matched.has(p.id) ? " is-matched" : ""}${wrongPair && wrongPair[1] === p.id ? " is-wrong" : ""}" type="button" data-mg-right="${p.id}" ${matched.has(p.id) ? "disabled" : ""}>
+                  <button class="mg-match-item${selectedRight === p.id ? " is-selected" : ""}${matched.has(p.id) ? " is-matched" : ""}${wrongPair && wrongPair[1] === p.id ? " is-wrong" : ""}" type="button" data-mg-right="${p.id}" ${matched.has(p.id) ? "disabled" : ""}>
                     <span>${bi(p.right)}</span>
+                    ${matched.has(p.id) ? checkSvg : ""}
                   </button>`)
                     .join("")}
               </div>
@@ -24048,39 +24073,38 @@ var LearningHausMiniGameEngine;
                     ? t("Not a match. Try pairing another card.", "ยังไม่ตรงกัน ลองเลือกคู่ใหม่อีกครั้ง")
                     : selectedLeft
                         ? t("Now tap the matching card on the right.", "แตะเลือกการ์ดที่ตรงกันฝั่งขวาได้เลย")
-                        : t(`Matched ${matched.size} / ${level.pairs.length} pairs.`, `จับคู่แล้ว ${matched.size} / ${level.pairs.length} คู่`)}</span>
+                        : selectedRight
+                            ? t("Now tap the matching card on the left.", "แตะเลือกการ์ดที่ตรงกันฝั่งซ้ายได้เลย")
+                            : t(`Matched ${matched.size} / ${level.pairs.length} pairs.`, `จับคู่แล้ว ${matched.size} / ${level.pairs.length} คู่`)}</span>
             </div>
           </div>
         `;
                 container.querySelectorAll("[data-mg-left]").forEach((btn) => {
                     btn.onclick = () => {
-                        selectedLeft = btn.dataset.mgLeft || null;
+                        const lid = btn.dataset.mgLeft || "";
+                        if (!lid || matched.has(lid))
+                            return;
                         wrongPair = null;
-                        renderFn();
+                        if (selectedRight) {
+                            tryPair(lid, selectedRight);
+                        }
+                        else {
+                            selectedLeft = selectedLeft === lid ? null : lid;
+                            renderFn();
+                        }
                     };
                 });
                 container.querySelectorAll("[data-mg-right]").forEach((btn) => {
                     btn.onclick = () => {
-                        if (!selectedLeft)
-                            return;
                         const rid = btn.dataset.mgRight || "";
-                        if (rid === selectedLeft) {
-                            matched.add(rid);
-                            selectedLeft = null;
-                            wrongPair = null;
-                            onFeedback(true);
-                            renderFn();
-                            if (matched.size === level.pairs.length) {
-                                const reviews = buildReviews(false);
-                                const correctCount = reviews.filter((r) => r.isCorrect).length;
-                                schedule(() => emitDone({ correctCount, totalCount: level.pairs.length, reviews }), 460);
-                            }
+                        if (!rid || matched.has(rid))
+                            return;
+                        wrongPair = null;
+                        if (selectedLeft) {
+                            tryPair(selectedLeft, rid);
                         }
                         else {
-                            missedIds.add(selectedLeft);
-                            wrongPair = [selectedLeft, rid];
-                            selectedLeft = null;
-                            onFeedback(false);
+                            selectedRight = selectedRight === rid ? null : rid;
                             renderFn();
                         }
                     };
@@ -26709,6 +26733,42 @@ var LearningHausPartyArena;
             `data-person-x-url="${esc(p.xUrl || "")}"`
         ].join(" ");
     };
+    const getCorrectAnswerLabel = (q) => {
+        if (q.kind === "quiz") {
+            const opts = q.options || [];
+            const idx = Math.max(0, Math.min(opts.length - 1, q.correctIndex || 0));
+            return opts[idx] || "";
+        }
+        if (q.kind === "true-false-sprint") {
+            return q.isTrue ? t("TRUE", "จริง") : t("FALSE", "เท็จ");
+        }
+        if (q.kind === "binary-stamp") {
+            return q.stampAnswer === "right"
+                ? q.rightLabel || t("Right", "ฝั่งขวา")
+                : q.leftLabel || t("Left", "ฝั่งซ้าย");
+        }
+        if (q.kind === "matching" && Array.isArray(q.pairs) && q.pairs.length) {
+            return q.pairs.map((p) => `${p.left} = ${p.right}`).join(" · ");
+        }
+        if (q.kind === "order-steps" && Array.isArray(q.steps) && q.steps.length) {
+            return q.steps.join(" → ");
+        }
+        return q.explanation || t("Answer revealed", "เฉลยคำตอบ");
+    };
+    const renderCenterRevealHtml = (room) => {
+        if (room.status !== "reveal" || !room.currentQuestion)
+            return "";
+        const q = room.currentQuestion;
+        const answerText = getCorrectAnswerLabel(q);
+        const showWhy = Boolean(q.explanation && q.explanation.trim() && q.explanation.trim() !== answerText.trim());
+        return `
+      <div class="party-table-reveal" role="status" aria-live="polite">
+        <span class="party-table-reveal__eyebrow">✓ ${t("CORRECT ANSWER", "เฉลยคำตอบ")}</span>
+        <strong class="party-table-reveal__answer">${esc(answerText)}</strong>
+        ${showWhy ? `<span class="party-table-reveal__why">${esc(q.explanation || "")}</span>` : ""}
+      </div>
+    `;
+    };
     const renderPokerStageHtml = (room, myId) => {
         const seats = [
             { left: "16%", top: "53%" },
@@ -26720,6 +26780,7 @@ var LearningHausPartyArena;
         return `
       <div class="party-stage party-stage--poker" data-party-stage-mode="poker-table">
         <img class="party-stage__bg" src="lesson-assets/party/party-poker-room.jpg" alt="Poker game room">
+        ${renderCenterRevealHtml(room)}
         ${tablePlayers
             .map((pl, idx) => {
             const pos = seats[idx % 4];
@@ -26762,6 +26823,7 @@ var LearningHausPartyArena;
         return `
       <div class="party-stage party-stage--solo" data-party-stage-mode="solo-desk">
         <img class="party-stage__bg" src="lesson-assets/party/party-solo-stage.jpg" alt="Quiz game show stage">
+        ${renderCenterRevealHtml(room)}
         <aside class="party-live-strip" aria-label="Live scores">
           <small>${t(`LIVE RANK (${room.players.length} PLAYERS)`, `อันดับสด (${room.players.length} คน)`)}</small>
           ${topStrip
@@ -27122,16 +27184,38 @@ var LearningHausPartyArena;
         lastRoomStatus = next.status;
         lastQuestionIdxRendered = next.questionIndex;
         syncPartyBgmForState();
-        if (renderKey !== lastRenderedRoomKey) {
+        const isSameActiveMinigameQuestion = prevStatus === "question" &&
+            next.status === "question" &&
+            prevQ === next.questionIndex &&
+            Boolean(activeMg) &&
+            !me?.answeredThisQ;
+        if (renderKey !== lastRenderedRoomKey && !isSameActiveMinigameQuestion) {
             lastRenderedRoomKey = renderKey;
             renderRoom();
         }
     };
+    const notifyServerLeave = (code, useBeacon = false) => {
+        if (!code)
+            return;
+        const url = `/api/party/rooms/${encodeURIComponent(code)}/leave`;
+        if (useBeacon && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+            try {
+                navigator.sendBeacon(url, new Blob(["{}"], { type: "application/json" }));
+                return;
+            }
+            catch {
+                // Fallback to fetch below.
+            }
+        }
+        void apiFetch(url, { method: "POST", body: "{}" });
+    };
     const leaveRoom = () => {
+        const leavingCode = currentRoom?.code;
         stopLoops();
         currentRoom = null;
         screenMode = "hub";
         lastRenderedRoomKey = "";
+        notifyServerLeave(leavingCode);
         renderHub();
     };
     LearningHausPartyArena.open = async () => {
@@ -27176,12 +27260,21 @@ var LearningHausPartyArena;
         return { ok: false, error: res.data?.error || t("Room not found", "ไม่พบรหัสห้องนี้") };
     };
     LearningHausPartyArena.close = () => {
+        const leavingCode = currentRoom?.code;
         stopLoops();
+        currentRoom = null;
+        screenMode = "hub";
+        lastRenderedRoomKey = "";
+        notifyServerLeave(leavingCode);
         if (overlayEl)
             overlayEl.hidden = true;
         window.LearningHausSettings?.setPartyBgm?.("off");
     };
     if (typeof window !== "undefined") {
+        window.addEventListener("pagehide", () => {
+            if (currentRoom?.code)
+                notifyServerLeave(currentRoom.code, true);
+        });
         window.addEventListener("learninghaus:social-refresh", async () => {
             if (!overlayEl || overlayEl.hidden || screenMode !== "room" || !currentRoom)
                 return;

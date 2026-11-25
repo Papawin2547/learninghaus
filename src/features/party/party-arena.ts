@@ -1130,6 +1130,43 @@ namespace LearningHausPartyArena {
     ].join(" ");
   };
 
+  const getCorrectAnswerLabel = (q: PartyQuestionItem): string => {
+    if (q.kind === "quiz") {
+      const opts = q.options || [];
+      const idx = Math.max(0, Math.min(opts.length - 1, q.correctIndex || 0));
+      return opts[idx] || "";
+    }
+    if (q.kind === "true-false-sprint") {
+      return q.isTrue ? t("TRUE", "จริง") : t("FALSE", "เท็จ");
+    }
+    if (q.kind === "binary-stamp") {
+      return q.stampAnswer === "right"
+        ? q.rightLabel || t("Right", "ฝั่งขวา")
+        : q.leftLabel || t("Left", "ฝั่งซ้าย");
+    }
+    if (q.kind === "matching" && Array.isArray(q.pairs) && q.pairs.length) {
+      return q.pairs.map((p) => `${p.left} = ${p.right}`).join(" · ");
+    }
+    if (q.kind === "order-steps" && Array.isArray(q.steps) && q.steps.length) {
+      return q.steps.join(" → ");
+    }
+    return q.explanation || t("Answer revealed", "เฉลยคำตอบ");
+  };
+
+  const renderCenterRevealHtml = (room: PartyRoomState): string => {
+    if (room.status !== "reveal" || !room.currentQuestion) return "";
+    const q = room.currentQuestion;
+    const answerText = getCorrectAnswerLabel(q);
+    const showWhy = Boolean(q.explanation && q.explanation.trim() && q.explanation.trim() !== answerText.trim());
+    return `
+      <div class="party-table-reveal" role="status" aria-live="polite">
+        <span class="party-table-reveal__eyebrow">✓ ${t("CORRECT ANSWER", "เฉลยคำตอบ")}</span>
+        <strong class="party-table-reveal__answer">${esc(answerText)}</strong>
+        ${showWhy ? `<span class="party-table-reveal__why">${esc(q.explanation || "")}</span>` : ""}
+      </div>
+    `;
+  };
+
   const renderPokerStageHtml = (room: PartyRoomState, myId: number): string => {
     const seats = [
       { left: "16%", top: "53%" },
@@ -1141,6 +1178,7 @@ namespace LearningHausPartyArena {
     return `
       <div class="party-stage party-stage--poker" data-party-stage-mode="poker-table">
         <img class="party-stage__bg" src="lesson-assets/party/party-poker-room.jpg" alt="Poker game room">
+        ${renderCenterRevealHtml(room)}
         ${tablePlayers
           .map((pl, idx) => {
             const pos = seats[idx % 4];
@@ -1186,6 +1224,7 @@ namespace LearningHausPartyArena {
     return `
       <div class="party-stage party-stage--solo" data-party-stage-mode="solo-desk">
         <img class="party-stage__bg" src="lesson-assets/party/party-solo-stage.jpg" alt="Quiz game show stage">
+        ${renderCenterRevealHtml(room)}
         <aside class="party-live-strip" aria-label="Live scores">
           <small>${t(`LIVE RANK (${room.players.length} PLAYERS)`, `อันดับสด (${room.players.length} คน)`)}</small>
           ${topStrip
@@ -1576,17 +1615,40 @@ namespace LearningHausPartyArena {
     lastQuestionIdxRendered = next.questionIndex;
     syncPartyBgmForState();
 
-    if (renderKey !== lastRenderedRoomKey) {
+    const isSameActiveMinigameQuestion =
+      prevStatus === "question" &&
+      next.status === "question" &&
+      prevQ === next.questionIndex &&
+      Boolean(activeMg) &&
+      !me?.answeredThisQ;
+
+    if (renderKey !== lastRenderedRoomKey && !isSameActiveMinigameQuestion) {
       lastRenderedRoomKey = renderKey;
       renderRoom();
     }
   };
 
+  const notifyServerLeave = (code: string | undefined, useBeacon = false): void => {
+    if (!code) return;
+    const url = `/api/party/rooms/${encodeURIComponent(code)}/leave`;
+    if (useBeacon && typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      try {
+        navigator.sendBeacon(url, new Blob(["{}"], { type: "application/json" }));
+        return;
+      } catch {
+        // Fallback to fetch below.
+      }
+    }
+    void apiFetch(url, { method: "POST", body: "{}" });
+  };
+
   const leaveRoom = (): void => {
+    const leavingCode = currentRoom?.code;
     stopLoops();
     currentRoom = null;
     screenMode = "hub";
     lastRenderedRoomKey = "";
+    notifyServerLeave(leavingCode);
     renderHub();
   };
 
@@ -1630,12 +1692,20 @@ namespace LearningHausPartyArena {
   };
 
   export const close = (): void => {
+    const leavingCode = currentRoom?.code;
     stopLoops();
+    currentRoom = null;
+    screenMode = "hub";
+    lastRenderedRoomKey = "";
+    notifyServerLeave(leavingCode);
     if (overlayEl) overlayEl.hidden = true;
     window.LearningHausSettings?.setPartyBgm?.("off");
   };
 
   if (typeof window !== "undefined") {
+    window.addEventListener("pagehide", () => {
+      if (currentRoom?.code) notifyServerLeave(currentRoom.code, true);
+    });
     window.addEventListener("learninghaus:social-refresh", async () => {
       if (!overlayEl || overlayEl.hidden || screenMode !== "room" || !currentRoom) return;
       const res = await apiFetch<{ room?: PartyRoomState }>(`/api/party/rooms/${encodeURIComponent(currentRoom.code)}`);

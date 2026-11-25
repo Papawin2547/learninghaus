@@ -1516,6 +1516,23 @@ async function api(req, res, url) {
       notifyPartyMembers(room);
       return json(res, 200, { room: serializePartyRoom(room) });
     }
+    if (action === 'leave' && method === 'POST') {
+      if (room.players.has(user.id)) {
+        room.players.delete(user.id);
+        const remainingHumans = Array.from(room.players.values()).filter((p) => !p.isBot);
+        if (remainingHumans.length === 0) {
+          partyRooms.delete(room.code);
+          return json(res, 200, { ok: true, closed: true });
+        }
+        if (room.hostUserId === user.id) {
+          room.hostUserId = remainingHumans[0].userId;
+        }
+        room.crownUserId = computePartyCrown(room);
+        room.updatedAt = Date.now();
+        notifyPartyMembers(room);
+      }
+      return json(res, 200, { ok: true });
+    }
     if (action === 'ready' && method === 'POST') {
       const player = room.players.get(user.id);
       if (!player) return fail(res, 403, 'Join this party room first.');

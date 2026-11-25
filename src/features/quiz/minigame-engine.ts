@@ -77,9 +77,33 @@ namespace LearningHausMiniGameEngine {
     if (level.kind === "matching") {
       const rightOrder = deterministicShuffle(level.pairs, 2);
       let selectedLeft: string | null = null;
+      let selectedRight: string | null = null;
       const matched = new Set<string>();
       const missedIds = new Set<string>();
       let wrongPair: [string, string] | null = null;
+
+      const tryPair = (lid: string, rid: string): void => {
+        if (rid === lid) {
+          matched.add(rid);
+          selectedLeft = null;
+          selectedRight = null;
+          wrongPair = null;
+          onFeedback(true);
+          renderFn();
+          if (matched.size === level.pairs.length) {
+            const reviews = buildReviews(false);
+            const correctCount = reviews.filter((r) => r.isCorrect).length;
+            schedule(() => emitDone({ correctCount, totalCount: level.pairs.length, reviews }), 460);
+          }
+        } else {
+          missedIds.add(lid);
+          wrongPair = [lid, rid];
+          selectedLeft = null;
+          selectedRight = null;
+          onFeedback(false);
+          renderFn();
+        }
+      };
 
       const buildReviews = (timedOut = false): ReviewRecord[] =>
         level.pairs.map((p) => {
@@ -120,8 +144,9 @@ namespace LearningHausMiniGameEngine {
                 ${rightOrder
                   .map(
                     (p) => `
-                  <button class="mg-match-item${matched.has(p.id) ? " is-matched" : ""}${wrongPair && wrongPair[1] === p.id ? " is-wrong" : ""}" type="button" data-mg-right="${p.id}" ${matched.has(p.id) ? "disabled" : ""}>
+                  <button class="mg-match-item${selectedRight === p.id ? " is-selected" : ""}${matched.has(p.id) ? " is-matched" : ""}${wrongPair && wrongPair[1] === p.id ? " is-wrong" : ""}" type="button" data-mg-right="${p.id}" ${matched.has(p.id) ? "disabled" : ""}>
                     <span>${bi(p.right)}</span>
+                    ${matched.has(p.id) ? checkSvg : ""}
                   </button>`
                   )
                   .join("")}
@@ -133,38 +158,35 @@ namespace LearningHausMiniGameEngine {
                   ? t("Not a match. Try pairing another card.", "ยังไม่ตรงกัน ลองเลือกคู่ใหม่อีกครั้ง")
                   : selectedLeft
                     ? t("Now tap the matching card on the right.", "แตะเลือกการ์ดที่ตรงกันฝั่งขวาได้เลย")
-                    : t(`Matched ${matched.size} / ${level.pairs.length} pairs.`, `จับคู่แล้ว ${matched.size} / ${level.pairs.length} คู่`)
+                    : selectedRight
+                      ? t("Now tap the matching card on the left.", "แตะเลือกการ์ดที่ตรงกันฝั่งซ้ายได้เลย")
+                      : t(`Matched ${matched.size} / ${level.pairs.length} pairs.`, `จับคู่แล้ว ${matched.size} / ${level.pairs.length} คู่`)
               }</span>
             </div>
           </div>
         `;
         container.querySelectorAll<HTMLButtonElement>("[data-mg-left]").forEach((btn) => {
           btn.onclick = () => {
-            selectedLeft = btn.dataset.mgLeft || null;
+            const lid = btn.dataset.mgLeft || "";
+            if (!lid || matched.has(lid)) return;
             wrongPair = null;
-            renderFn();
+            if (selectedRight) {
+              tryPair(lid, selectedRight);
+            } else {
+              selectedLeft = selectedLeft === lid ? null : lid;
+              renderFn();
+            }
           };
         });
         container.querySelectorAll<HTMLButtonElement>("[data-mg-right]").forEach((btn) => {
           btn.onclick = () => {
-            if (!selectedLeft) return;
             const rid = btn.dataset.mgRight || "";
-            if (rid === selectedLeft) {
-              matched.add(rid);
-              selectedLeft = null;
-              wrongPair = null;
-              onFeedback(true);
-              renderFn();
-              if (matched.size === level.pairs.length) {
-                const reviews = buildReviews(false);
-                const correctCount = reviews.filter((r) => r.isCorrect).length;
-                schedule(() => emitDone({ correctCount, totalCount: level.pairs.length, reviews }), 460);
-              }
+            if (!rid || matched.has(rid)) return;
+            wrongPair = null;
+            if (selectedLeft) {
+              tryPair(selectedLeft, rid);
             } else {
-              missedIds.add(selectedLeft);
-              wrongPair = [selectedLeft, rid];
-              selectedLeft = null;
-              onFeedback(false);
+              selectedRight = selectedRight === rid ? null : rid;
               renderFn();
             }
           };
