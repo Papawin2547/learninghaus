@@ -240,11 +240,14 @@ namespace LearningHausPartyArena {
   const generateRandomPartyQuestions = (
     count: number,
     quizOnly: boolean,
-    source: "mfu" | "eu" | "all" = "all"
+    source: "mfu" | "hp" | "eu" | "all" = "all"
   ): PartyQuestionItem[] => {
     const safeCount = Math.max(1, Math.min(20, count));
     if (source === "mfu" && typeof LearningHausMfuTrivia !== "undefined") {
       return LearningHausMfuTrivia.pickMfuTriviaQuestions(safeCount, quizOnly).map(shuffleQuestionChoices);
+    }
+    if (source === "hp" && typeof LearningHausHpTrivia !== "undefined") {
+      return LearningHausHpTrivia.pickHpTriviaQuestions(safeCount, quizOnly).map(shuffleQuestionChoices);
     }
 
     const chapters = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -336,6 +339,9 @@ namespace LearningHausPartyArena {
     if (source === "all") {
       if (typeof LearningHausMfuTrivia !== "undefined") {
         combined.push(...LearningHausMfuTrivia.pickMfuTriviaQuestions(20, quizOnly));
+      }
+      if (typeof LearningHausHpTrivia !== "undefined") {
+        combined.push(...LearningHausHpTrivia.pickHpTriviaQuestions(20, quizOnly));
       }
       combined.push(...gatherCustomAndPresetPool(quizOnly));
     }
@@ -445,7 +451,7 @@ namespace LearningHausPartyArena {
   let overlayEl: HTMLElement | null = null;
   let screenMode: "hub" | "room" = "hub";
   let draftTitle = "";
-  let draftTopic: "mfu" | "eu" | "all" = "all";
+  let draftTopic: "mfu" | "hp" | "eu" | "all" = "all";
   let draftMixMode: "mix" | "quiz" = "mix";
   let draftCount = 8;
   let draftCustomizeOpen = false;
@@ -803,6 +809,7 @@ namespace LearningHausPartyArena {
               <div class="party-pc-pills">
                 <button type="button" class="party-pc-pill${draftTopic === "all" ? " is-on" : ""}" data-party-topic="all">${t("All Banks (Random)", "สุ่มรวมทุกคลัง")}</button>
                 <button type="button" class="party-pc-pill${draftTopic === "mfu" ? " is-on" : ""}" data-party-topic="mfu">${t("MFU Trivia", "แฟนพันธุ์แท้ มฟล.")}</button>
+                <button type="button" class="party-pc-pill${draftTopic === "hp" ? " is-on" : ""}" data-party-topic="hp">${t("Harry Potter", "แฮร์รี่ พอตเตอร์")}</button>
                 <button type="button" class="party-pc-pill${draftTopic === "eu" ? " is-on" : ""}" data-party-topic="eu">EU AI Act &amp; PDPA</button>
               </div>
             </div>
@@ -911,13 +918,15 @@ namespace LearningHausPartyArena {
     overlayEl.querySelectorAll<HTMLButtonElement>("[data-party-topic]").forEach((btn) => {
       btn.addEventListener("click", () => {
         const raw = btn.dataset.partyTopic;
-        draftTopic = raw === "eu" ? "eu" : raw === "mfu" ? "mfu" : "all";
+        draftTopic = raw === "eu" ? "eu" : raw === "mfu" ? "mfu" : raw === "hp" ? "hp" : "all";
         draftTitle =
           draftTopic === "mfu"
             ? t("MFU Fan Trivia Party", "ปาร์ตี้แฟนพันธุ์แท้ มฟล.")
-            : draftTopic === "eu"
-              ? t("EU AI Act & PDPA Party", "ปาร์ตี้ EU AI Act & PDPA")
-              : t("All-Bank Random Party", "ปาร์ตี้สุ่มรวมทุกคลังคำถาม");
+            : draftTopic === "hp"
+              ? t("Harry Potter Wizarding Party", "ปาร์ตี้แฟนพันธุ์แท้ แฮร์รี่ พอตเตอร์")
+              : draftTopic === "eu"
+                ? t("EU AI Act & PDPA Party", "ปาร์ตี้ EU AI Act & PDPA")
+                : t("All-Bank Random Party", "ปาร์ตี้สุ่มรวมทุกคลังคำถาม");
         applyDeckConfigCount(draftQuestions.length || draftCount);
         renderHub();
       });

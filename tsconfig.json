@@ -41,6 +41,7 @@
     "src/features/notifications/notifications.ts",
     "src/features/quiz/minigame-engine.ts",
     "src/content/mfu-trivia.ts",
+    "src/content/hp-trivia.ts",
     "src/features/party/party-arena.ts",
     "src/features/quiz/quiz-flow.ts"
   ]
