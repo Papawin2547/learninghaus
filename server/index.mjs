@@ -243,7 +243,7 @@ const DEV_PASSWORD = process.env.LEARNINGHAUS_DEV_PASSWORD || 'DevHaus#2026';
 {
   const existingDev = db.prepare('SELECT id, is_developer FROM users WHERE email=?').get(DEV_EMAIL);
   if (!existingDev) {
-    db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,is_developer,created_at) VALUES(?,?,?,?,1,?)')
+    db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,total_xp,is_developer,created_at) VALUES(?,?,?,?,0,1,?)')
       .run(DEV_EMAIL, passwordHash(DEV_PASSWORD), 'Developer', '', now());
   } else if (!existingDev.is_developer) {
     db.prepare('UPDATE users SET is_developer=1 WHERE id=?').run(existingDev.id);
@@ -806,7 +806,7 @@ async function api(req, res, url) {
       if (!user) {
         isNew = true;
         const id = Number(
-          db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,created_at) VALUES(?,?,?,?,?)')
+          db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,total_xp,created_at) VALUES(?,?,?,?,0,?)')
             .run(email, passwordHash(randomBytes(24).toString('hex')), displayName, picture, now())
             .lastInsertRowid
         );
@@ -831,7 +831,7 @@ async function api(req, res, url) {
     const name = String(input.name || '').trim().slice(0, 40) || email.split('@')[0];
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8 || name.length < 2) return fail(res, 400, 'Enter a valid email, name and password of at least 8 characters.');
     if (db.prepare('SELECT 1 FROM users WHERE email=?').get(email)) return fail(res, 409, 'This email is already registered.');
-    const id = Number(db.prepare('INSERT INTO users(email,password_hash,display_name,created_at) VALUES(?,?,?,?)').run(email, passwordHash(password), name, now()).lastInsertRowid);
+    const id = Number(db.prepare('INSERT INTO users(email,password_hash,display_name,total_xp,created_at) VALUES(?,?,?,0,?)').run(email, passwordHash(password), name, now()).lastInsertRowid);
     const user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
     issueSession(res, user, true);
     recordUsageEvent(user.id, 'register', 'account', { name }, req);
