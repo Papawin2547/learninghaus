@@ -1209,8 +1209,13 @@ function staticFile(req, res, url) {
   if (url.pathname === '/') { res.writeHead(302, { Location: '/Code/learninghaus.html' }); return res.end(); }
   const pathname = decodeURIComponent(url.pathname);
   if (/(^|\/)(?:server|node_modules|\.git|\.env)(\/|$)/i.test(pathname)) return fail(res, 404, 'Not found.');
-  const file = resolve(siteRoot, `.${pathname}`);
-  if (!file.startsWith(siteRoot + sep) || !existsSync(file) || !statSync(file).isFile()) return fail(res, 404, 'Not found.');
+  let file = resolve(siteRoot, `.${pathname}`);
+  let rootBound = siteRoot;
+  if ((!file.startsWith(siteRoot + sep) || !existsSync(file) || !statSync(file).isFile()) && pathname.startsWith('/Code/')) {
+    file = resolve(codeRoot, `.${pathname.slice('/Code'.length)}`);
+    rootBound = codeRoot;
+  }
+  if (!file.startsWith(rootBound + sep) || !existsSync(file) || !statSync(file).isFile()) return fail(res, 404, 'Not found.');
   const size = statSync(file).size;
   const type = types[extname(file).toLowerCase()] || 'application/octet-stream';
   const headers = { 'Content-Type': type, 'Accept-Ranges': 'bytes', 'Cache-Control': 'no-cache' };
