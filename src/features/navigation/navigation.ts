@@ -240,6 +240,7 @@
       if (panelName === "lesson" && homeMain) homeMain.scrollTop = 0;
       homeView.focus({ preventScroll: true });
       window.scrollTo(0, 0);
+      window.LearningHausSocial?.trackEvent?.("view_switch", panelName);
     };
 
     const cornerChatFab = document.querySelector<HTMLButtonElement>("[data-social-corner-fab]");
@@ -304,6 +305,7 @@
       quizView.scrollTop = 0;
       document.documentElement.scrollTop = 0;
       window.scrollTo(0, 0);
+      window.LearningHausSocial?.trackEvent?.("view_switch", "quiz");
     };
 
     window.addEventListener("learninghaus:open-quiz", () => {
@@ -912,6 +914,10 @@
           }
           return;
         }
+        if (!window.LearningHausSocial?.hasAccount?.()) {
+          showAuth("signin");
+          return;
+        }
         if (homeTargetName === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage()) return;
         if (homeTargetName === "quiz") {
           showQuiz();
@@ -1157,28 +1163,42 @@
       }
     });
 
-    // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ หรือคืนค่ามุมมองเดิมเฉพาะเมื่อเคยเข้าใช้งาน/ล็อกอินไว้แล้ว
-    let explicitlyLoggedOut = false;
-    let savedView = "landing";
-    try {
-      explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
-      savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
-    } catch {
-      explicitlyLoggedOut = false;
-      savedView = "landing";
-    }
-    if (!explicitlyLoggedOut && savedView !== "landing") {
-      if (savedView === "quiz") {
-        showQuiz();
-      } else {
-        const validPanels = new Set(["learn", "achievement", "achievement-showcase", "social", "profile", "leaderboards", "settings"]);
-        const targetPanel = validPanels.has(savedView) ? savedView : "learn";
-        if (targetPanel === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage()) {
-          showHome("learn");
+    // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ และคืนค่าหน้าเดิมเฉพาะเมื่อมีเซสชันล็อกอินจริงจากเซิร์ฟเวอร์
+    let initialRestored = false;
+    const restoreViewForAuthenticatedUser = (): void => {
+      if (initialRestored) return;
+      initialRestored = true;
+      if (!window.LearningHausSocial?.hasAccount?.()) {
+        saveActiveView("landing");
+        showLanding();
+        return;
+      }
+      let explicitlyLoggedOut = false;
+      let savedView = "landing";
+      try {
+        explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
+        savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
+      } catch {
+        explicitlyLoggedOut = false;
+        savedView = "landing";
+      }
+      if (!explicitlyLoggedOut && savedView !== "landing") {
+        if (savedView === "quiz") {
+          showQuiz();
         } else {
-          showHome(targetPanel);
+          const validPanels = new Set(["learn", "achievement", "achievement-showcase", "social", "profile", "leaderboards", "settings"]);
+          const targetPanel = validPanels.has(savedView) ? savedView : "learn";
+          if (targetPanel === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage()) {
+            showHome("learn");
+          } else {
+            showHome(targetPanel);
+          }
         }
       }
+    };
+    window.addEventListener("learninghaus:social-session", restoreViewForAuthenticatedUser, { once: true });
+    if (window.LearningHausSocial?.hasAccount?.()) {
+      restoreViewForAuthenticatedUser();
     }
   };
 

@@ -933,13 +933,18 @@ namespace LearningHausSettings {
           : LearningHausI18n.t("Preview", "ฟังตัวอย่าง");
       }
       if (reviewInput) reviewInput.checked = prefs.showAnswerReview;
+      const isDev = Boolean(window.LearningHausSocial?.isDeveloper?.());
+      page.querySelectorAll<HTMLElement>("[data-dev-only]").forEach((el) => {
+        el.hidden = !isDev;
+      });
       if (demoPropsInput) {
-        demoPropsInput.checked = Boolean(LearningHausAccountStorage.readJson<boolean>(DEMO_UNLOCK_KEY, false));
+        demoPropsInput.checked = isDev && Boolean(LearningHausAccountStorage.readJson<boolean>(DEMO_UNLOCK_KEY, false));
       }
       if (demoAllChaptersInput) {
-        const enabled =
+        const enabled = isDev && (
           window.LearningHausQuiz?.isDemoCompleteAllChapters?.() ??
-          Boolean(LearningHausAccountStorage.readJson<boolean>(DEMO_COMPLETE_CHAPTERS_KEY, false));
+          Boolean(LearningHausAccountStorage.readJson<boolean>(DEMO_COMPLETE_CHAPTERS_KEY, false))
+        );
         demoAllChaptersInput.checked = enabled;
       }
     };
@@ -1050,6 +1055,10 @@ namespace LearningHausSettings {
           dispatchBgmUpdated();
         } else if (key === "showAnswerReview") prefs.showAnswerReview = input.checked;
         else if (key === "demoUnlockProps") {
+          if (!window.LearningHausSocial?.isDeveloper?.()) {
+            input.checked = false;
+            return;
+          }
           LearningHausAccountStorage.writeJson(DEMO_UNLOCK_KEY, input.checked);
           const dialogCheckbox = document.querySelector<HTMLInputElement>("[data-pixel-cat-demo-unlock]");
           if (dialogCheckbox) {
@@ -1063,6 +1072,10 @@ namespace LearningHausSettings {
           );
           return;
         } else if (key === "demoCompleteAllChapters") {
+          if (!window.LearningHausSocial?.isDeveloper?.()) {
+            input.checked = false;
+            return;
+          }
           LearningHausAccountStorage.writeJson(DEMO_COMPLETE_CHAPTERS_KEY, input.checked);
           window.LearningHausQuiz?.setDemoCompleteAllChapters?.(input.checked);
           if (input.checked) playTone("victory");

@@ -284,6 +284,7 @@
       if (activeChapter < 1 || activeChapter > chapterData.length || page.hidden) return;
       saveChapterVideoFinished(activeChapter);
       stopYtSeekGuard();
+      window.LearningHausSocial?.trackEvent?.("video_complete", `chapter-${activeChapter}`, { chapter: activeChapter });
       window.dispatchEvent(new CustomEvent("learninghaus:chapter-video-ended", { detail: { chapter: activeChapter } }));
       mediaStatus.textContent =
         activeChapter === 1
@@ -538,6 +539,7 @@
     });
     localVideo.addEventListener("ended", markChapterVideoWatched);
     play.addEventListener("click", (event) => {
+      window.LearningHausSocial?.trackEvent?.("video_start", `chapter-${activeChapter}`, { chapter: activeChapter });
       const localSource = localVideoByChapter[activeChapter];
       if (localSource) {
         event.preventDefault();
@@ -678,6 +680,7 @@
       });
       input.value = "";
       feedback.textContent = LearningHausI18n.t("Comment added.", "เพิ่มความคิดเห็นแล้ว");
+      window.LearningHausSocial?.trackEvent?.("lesson_comment", `chapter-${activeChapter}`, { chapter: activeChapter });
       renderComments();
     });
     commentsList.addEventListener("click", (event) => {

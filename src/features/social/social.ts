@@ -16,6 +16,7 @@ namespace LearningHausSocial {
     xUrl?: string;
     featuredAchievements?: string[] | null;
     accountState?: "active" | "disabled";
+    isDeveloper?: boolean;
     status?: string;
     direction?: string;
   };
@@ -827,6 +828,15 @@ namespace LearningHausSocial {
       await refresh();
     }
     refreshProfileActions();
+    const devMode = Boolean(me && me.isDeveloper);
+    document.querySelectorAll<HTMLElement>("[data-dev-only]").forEach((el) => {
+      el.hidden = !devMode;
+    });
+    if (!devMode) {
+      LearningHausAccountStorage.writeJson("learninghaus.pixelCat.demoUnlock.v1", false);
+      LearningHausAccountStorage.writeJson("learninghaus.quiz.demoCompleteAllChapters.v1", false);
+      window.LearningHausQuiz?.setDemoCompleteAllChapters?.(false);
+    }
     window.dispatchEvent(new Event("learninghaus:social-session"));
   };
 
@@ -889,7 +899,23 @@ namespace LearningHausSocial {
 
   export const hasAccount = (): boolean => available === true && me !== null;
   export const isConnected = (): boolean => hasAccount() && me?.accountState !== "disabled";
+  export const isDeveloper = (): boolean => Boolean(me && me.isDeveloper);
   export const currentUserId = (): number => me?.id || 0;
+
+  export const trackEvent = (eventType: string, target = "", meta: Record<string, unknown> = {}): void => {
+    if (!isConnected() || !eventType) return;
+    const width = typeof window !== "undefined" ? window.innerWidth : 1280;
+    const deviceType = width <= 767 ? "mobile" : width <= 1024 ? "tablet" : "desktop";
+    const language = typeof LearningHausI18n !== "undefined" ? LearningHausI18n.getLang() : "en";
+    void fetch("/api/analytics/event", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventType, target, language, meta: { ...meta, deviceType } })
+    }).catch(() => {
+      // Ignore analytics network errors.
+    });
+  };
 
   export const logout = async (): Promise<void> => {
     try {

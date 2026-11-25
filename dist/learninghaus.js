@@ -3894,6 +3894,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 homeMain.scrollTop = 0;
             homeView.focus({ preventScroll: true });
             window.scrollTo(0, 0);
+            window.LearningHausSocial?.trackEvent?.("view_switch", panelName);
         };
         const cornerChatFab = document.querySelector("[data-social-corner-fab]");
         let lastNonSocialView = "learn";
@@ -3955,6 +3956,7 @@ document.addEventListener('DOMContentLoaded', () => {
             quizView.scrollTop = 0;
             document.documentElement.scrollTop = 0;
             window.scrollTo(0, 0);
+            window.LearningHausSocial?.trackEvent?.("view_switch", "quiz");
         };
         window.addEventListener("learninghaus:open-quiz", () => {
             closeLookingPeopleModal();
@@ -4548,6 +4550,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     return;
                 }
+                if (!window.LearningHausSocial?.hasAccount?.()) {
+                    showAuth("signin");
+                    return;
+                }
                 if (homeTargetName === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage())
                     return;
                 if (homeTargetName === "quiz") {
@@ -4788,31 +4794,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-        // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ หรือคืนค่ามุมมองเดิมเฉพาะเมื่อเคยเข้าใช้งาน/ล็อกอินไว้แล้ว
-        let explicitlyLoggedOut = false;
-        let savedView = "landing";
-        try {
-            explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
-            savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
-        }
-        catch {
-            explicitlyLoggedOut = false;
-            savedView = "landing";
-        }
-        if (!explicitlyLoggedOut && savedView !== "landing") {
-            if (savedView === "quiz") {
-                showQuiz();
+        // เปิดหน้า Landing เป็นค่าเริ่มต้นสำหรับผู้เยี่ยมชมใหม่ และคืนค่าหน้าเดิมเฉพาะเมื่อมีเซสชันล็อกอินจริงจากเซิร์ฟเวอร์
+        let initialRestored = false;
+        const restoreViewForAuthenticatedUser = () => {
+            if (initialRestored)
+                return;
+            initialRestored = true;
+            if (!window.LearningHausSocial?.hasAccount?.()) {
+                saveActiveView("landing");
+                showLanding();
+                return;
             }
-            else {
-                const validPanels = new Set(["learn", "achievement", "achievement-showcase", "social", "profile", "leaderboards", "settings"]);
-                const targetPanel = validPanels.has(savedView) ? savedView : "learn";
-                if (targetPanel === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage()) {
-                    showHome("learn");
+            let explicitlyLoggedOut = false;
+            let savedView = "landing";
+            try {
+                explicitlyLoggedOut = window.localStorage.getItem(EXPLICIT_LOGOUT_KEY) === "true";
+                savedView = window.localStorage.getItem(ACTIVE_VIEW_KEY) || "landing";
+            }
+            catch {
+                explicitlyLoggedOut = false;
+                savedView = "landing";
+            }
+            if (!explicitlyLoggedOut && savedView !== "landing") {
+                if (savedView === "quiz") {
+                    showQuiz();
                 }
                 else {
-                    showHome(targetPanel);
+                    const validPanels = new Set(["learn", "achievement", "achievement-showcase", "social", "profile", "leaderboards", "settings"]);
+                    const targetPanel = validPanels.has(savedView) ? savedView : "learn";
+                    if (targetPanel === "leaderboards" && !LearningHausLeaderboards.hasAnyCompletedStage()) {
+                        showHome("learn");
+                    }
+                    else {
+                        showHome(targetPanel);
+                    }
                 }
             }
+        };
+        window.addEventListener("learninghaus:social-session", restoreViewForAuthenticatedUser, { once: true });
+        if (window.LearningHausSocial?.hasAccount?.()) {
+            restoreViewForAuthenticatedUser();
         }
     };
     if (document.readyState === "loading") {
@@ -10886,6 +10907,7 @@ Object.assign(window, { LearningHausLearnHub });
                 return;
             saveChapterVideoFinished(activeChapter);
             stopYtSeekGuard();
+            window.LearningHausSocial?.trackEvent?.("video_complete", `chapter-${activeChapter}`, { chapter: activeChapter });
             window.dispatchEvent(new CustomEvent("learninghaus:chapter-video-ended", { detail: { chapter: activeChapter } }));
             mediaStatus.textContent =
                 activeChapter === 1
@@ -11094,6 +11116,7 @@ Object.assign(window, { LearningHausLearnHub });
         });
         localVideo.addEventListener("ended", markChapterVideoWatched);
         play.addEventListener("click", (event) => {
+            window.LearningHausSocial?.trackEvent?.("video_start", `chapter-${activeChapter}`, { chapter: activeChapter });
             const localSource = localVideoByChapter[activeChapter];
             if (localSource) {
                 event.preventDefault();
@@ -11206,6 +11229,7 @@ Object.assign(window, { LearningHausLearnHub });
             });
             input.value = "";
             feedback.textContent = LearningHausI18n.t("Comment added.", "เพิ่มความคิดเห็นแล้ว");
+            window.LearningHausSocial?.trackEvent?.("lesson_comment", `chapter-${activeChapter}`, { chapter: activeChapter });
             renderComments();
         });
         commentsList.addEventListener("click", (event) => {
@@ -16462,12 +16486,16 @@ var LearningHausSettings;
             }
             if (reviewInput)
                 reviewInput.checked = prefs.showAnswerReview;
+            const isDev = Boolean(window.LearningHausSocial?.isDeveloper?.());
+            page.querySelectorAll("[data-dev-only]").forEach((el) => {
+                el.hidden = !isDev;
+            });
             if (demoPropsInput) {
-                demoPropsInput.checked = Boolean(LearningHausAccountStorage.readJson(DEMO_UNLOCK_KEY, false));
+                demoPropsInput.checked = isDev && Boolean(LearningHausAccountStorage.readJson(DEMO_UNLOCK_KEY, false));
             }
             if (demoAllChaptersInput) {
-                const enabled = window.LearningHausQuiz?.isDemoCompleteAllChapters?.() ??
-                    Boolean(LearningHausAccountStorage.readJson(DEMO_COMPLETE_CHAPTERS_KEY, false));
+                const enabled = isDev && (window.LearningHausQuiz?.isDemoCompleteAllChapters?.() ??
+                    Boolean(LearningHausAccountStorage.readJson(DEMO_COMPLETE_CHAPTERS_KEY, false)));
                 demoAllChaptersInput.checked = enabled;
             }
         };
@@ -16579,6 +16607,10 @@ var LearningHausSettings;
                 else if (key === "showAnswerReview")
                     prefs.showAnswerReview = input.checked;
                 else if (key === "demoUnlockProps") {
+                    if (!window.LearningHausSocial?.isDeveloper?.()) {
+                        input.checked = false;
+                        return;
+                    }
                     LearningHausAccountStorage.writeJson(DEMO_UNLOCK_KEY, input.checked);
                     const dialogCheckbox = document.querySelector("[data-pixel-cat-demo-unlock]");
                     if (dialogCheckbox) {
@@ -16591,6 +16623,10 @@ var LearningHausSettings;
                     return;
                 }
                 else if (key === "demoCompleteAllChapters") {
+                    if (!window.LearningHausSocial?.isDeveloper?.()) {
+                        input.checked = false;
+                        return;
+                    }
                     LearningHausAccountStorage.writeJson(DEMO_COMPLETE_CHAPTERS_KEY, input.checked);
                     window.LearningHausQuiz?.setDemoCompleteAllChapters?.(input.checked);
                     if (input.checked)
@@ -22636,6 +22672,15 @@ var LearningHausSocial;
             await refresh();
         }
         refreshProfileActions();
+        const devMode = Boolean(me && me.isDeveloper);
+        document.querySelectorAll("[data-dev-only]").forEach((el) => {
+            el.hidden = !devMode;
+        });
+        if (!devMode) {
+            LearningHausAccountStorage.writeJson("learninghaus.pixelCat.demoUnlock.v1", false);
+            LearningHausAccountStorage.writeJson("learninghaus.quiz.demoCompleteAllChapters.v1", false);
+            window.LearningHausQuiz?.setDemoCompleteAllChapters?.(false);
+        }
         window.dispatchEvent(new Event("learninghaus:social-session"));
     };
     LearningHausSocial.authenticate = async (kind, form) => {
@@ -22690,7 +22735,23 @@ var LearningHausSocial;
     };
     LearningHausSocial.hasAccount = () => available === true && me !== null;
     LearningHausSocial.isConnected = () => LearningHausSocial.hasAccount() && me?.accountState !== "disabled";
+    LearningHausSocial.isDeveloper = () => Boolean(me && me.isDeveloper);
     LearningHausSocial.currentUserId = () => me?.id || 0;
+    LearningHausSocial.trackEvent = (eventType, target = "", meta = {}) => {
+        if (!LearningHausSocial.isConnected() || !eventType)
+            return;
+        const width = typeof window !== "undefined" ? window.innerWidth : 1280;
+        const deviceType = width <= 767 ? "mobile" : width <= 1024 ? "tablet" : "desktop";
+        const language = typeof LearningHausI18n !== "undefined" ? LearningHausI18n.getLang() : "en";
+        void fetch("/api/analytics/event", {
+            method: "POST",
+            credentials: "same-origin",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventType, target, language, meta: { ...meta, deviceType } })
+        }).catch(() => {
+            // Ignore analytics network errors.
+        });
+    };
     LearningHausSocial.logout = async () => {
         try {
             window.localStorage.setItem("learninghaus.explicitLogout.v1", "true");

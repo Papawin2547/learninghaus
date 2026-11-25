@@ -106,10 +106,36 @@ db.exec(`
     created_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS party_presets_by_owner ON party_presets(owner_user_id, created_at DESC);
+  CREATE TABLE IF NOT EXISTS usage_events (
+    id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,
+    target TEXT NOT NULL DEFAULT '',
+    device_type TEXT NOT NULL DEFAULT '',
+    language TEXT NOT NULL DEFAULT 'en',
+    meta_json TEXT NOT NULL DEFAULT '{}',
+    created_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS usage_events_by_user ON usage_events(user_id, id DESC);
+  CREATE INDEX IF NOT EXISTS usage_events_by_type ON usage_events(event_type, created_at DESC);
+  CREATE TABLE IF NOT EXISTS party_match_logs (
+    id INTEGER PRIMARY KEY,
+    room_code TEXT NOT NULL,
+    host_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    mode TEXT NOT NULL,
+    player_count INTEGER NOT NULL,
+    question_count INTEGER NOT NULL,
+    winner_name TEXT NOT NULL DEFAULT '',
+    results_json TEXT NOT NULL DEFAULT '[]',
+    completed_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS party_match_logs_by_time ON party_match_logs(completed_at DESC);
 `);
 const userColumns = new Set(db.prepare('PRAGMA table_info(users)').all().map((column) => column.name));
 for (const [name, definition] of Object.entries({
   disabled:'INTEGER NOT NULL DEFAULT 0', total_xp:'INTEGER NOT NULL DEFAULT 60',
+  is_developer:'INTEGER NOT NULL DEFAULT 0', last_active_at:"TEXT NOT NULL DEFAULT ''",
   about:"TEXT NOT NULL DEFAULT ''", facebook_name:"TEXT NOT NULL DEFAULT ''", facebook_url:"TEXT NOT NULL DEFAULT ''",
   instagram_name:"TEXT NOT NULL DEFAULT ''", instagram_url:"TEXT NOT NULL DEFAULT ''",
   x_name:"TEXT NOT NULL DEFAULT ''", x_url:"TEXT NOT NULL DEFAULT ''",
@@ -210,7 +236,34 @@ const profileUser = (user) => ({ ...publicUser(user), totalXp: user.total_xp, ab
   instagramName: user.instagram_name, instagramUrl: user.instagram_url,
   xName: user.x_name, xUrl: user.x_url,
   featuredAchievements: parseFeaturedAchievements(user.featured_achievements) });
-const accountUser = (user) => ({ ...profileUser(user), email: user.email, catPresets: user.cat_presets || '[]', accountState: user.disabled ? 'disabled' : 'active' });
+const accountUser = (user) => ({ ...profileUser(user), email: user.email, catPresets: user.cat_presets || '[]', accountState: user.disabled ? 'disabled' : 'active', isDeveloper: Boolean(user.is_developer) });
+// สร้างบัญชี Developer เริ่มต้นสำหรับทดสอบระบบและดูข้อมูลการใช้งาน (ผู้ใช้ทั่วไปจะไม่เห็นเมนูทดสอบ)
+const DEV_EMAIL = (process.env.LEARNINGHAUS_DEV_EMAIL || 'dev@learninghaus.app').trim().toLowerCase();
+const DEV_PASSWORD = process.env.LEARNINGHAUS_DEV_PASSWORD || 'DevHaus#2026';
+{
+  const existingDev = db.prepare('SELECT id, is_developer FROM users WHERE email=?').get(DEV_EMAIL);
+  if (!existingDev) {
+    db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,is_developer,created_at) VALUES(?,?,?,?,1,?)')
+      .run(DEV_EMAIL, passwordHash(DEV_PASSWORD), 'Developer', '', now());
+  } else if (!existingDev.is_developer) {
+    db.prepare('UPDATE users SET is_developer=1 WHERE id=?').run(existingDev.id);
+  }
+}
+const inferDeviceType = (ua = '') => /ipad|tablet/i.test(ua) ? 'tablet' : /mobi|android|iphone/i.test(ua) ? 'mobile' : 'desktop';
+const recordUsageEvent = (userId, eventType, target = '', meta = {}, req = null, lang = '') => {
+  if (!userId || !eventType) return;
+  try {
+    const ts = now();
+    const device = String(meta?.deviceType || (req ? inferDeviceType(req.headers['user-agent'] || '') : ''));
+    const language = String(lang || meta?.language || 'en').slice(0, 8);
+    const safeMeta = JSON.stringify(meta && typeof meta === 'object' ? meta : {}).slice(0, 2000);
+    db.prepare('INSERT INTO usage_events(user_id,event_type,target,device_type,language,meta_json,created_at) VALUES(?,?,?,?,?,?,?)')
+      .run(userId, String(eventType).slice(0, 64), String(target || '').slice(0, 120), device.slice(0, 24), language, safeMeta, ts);
+    db.prepare('UPDATE users SET last_active_at=? WHERE id=?').run(ts, userId);
+  } catch {
+    // Never break user flows on telemetry errors.
+  }
+};
 // Remember me ออก cookie อายุ 30 วัน; หากไม่เลือก ใช้ session cookie และอายุฝั่งฐานข้อมูล 12 ชั่วโมง
 const issueSession = (res, user, rememberMe = true) => {
   const token = randomBytes(32).toString('base64url');
@@ -467,6 +520,31 @@ const advancePartyQuestion = (room, ts) => {
   if (room.questionIndex >= room.questions.length) {
     room.status = 'finished';
     room.crownUserId = computePartyCrown(room);
+    try {
+      const sorted = Array.from(room.players.values()).sort((a, b) => (b.score - a.score) || (a.totalReactionMs - b.totalReactionMs));
+      const winnerName = sorted[0]?.name || '';
+      const mode = room.players.size <= 4 ? 'poker-table' : 'solo-desk';
+      const summary = sorted.map((p, idx) => ({
+        rank: idx + 1,
+        userId: p.userId,
+        name: p.name,
+        isBot: Boolean(p.isBot),
+        score: p.score,
+        correct: p.correctCount,
+        bestStreak: p.bestStreak
+      }));
+      db.prepare('INSERT INTO party_match_logs(room_code,host_user_id,title,mode,player_count,question_count,winner_name,results_json,completed_at) VALUES(?,?,?,?,?,?,?,?,?)')
+        .run(room.code, room.hostUserId, room.title, mode, room.players.size, room.questions.length, winnerName, JSON.stringify(summary), now());
+      recordUsageEvent(room.hostUserId, 'party_match_complete', room.code, {
+        title: room.title,
+        mode,
+        playerCount: room.players.size,
+        questionCount: room.questions.length,
+        winnerName
+      });
+    } catch {
+      // Non-fatal analytics write error.
+    }
     return;
   }
   const q = room.questions[room.questionIndex];
@@ -665,6 +743,7 @@ async function api(req, res, url) {
     const id = Number(db.prepare('INSERT INTO users(email,password_hash,display_name,created_at) VALUES(?,?,?,?)').run(email, passwordHash(password), name, now()).lastInsertRowid);
     const user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
     issueSession(res, user, true);
+    recordUsageEvent(user.id, 'register', 'account', { name }, req);
     return json(res, 201, { user: accountUser(user) });
   }
   if (url.pathname === '/api/login' && method === 'POST') {
@@ -672,27 +751,56 @@ async function api(req, res, url) {
     const user = db.prepare('SELECT * FROM users WHERE email=?').get(String(input.email || '').trim().toLowerCase());
     if (!user || !checkPassword(String(input.password || ''), user.password_hash)) return fail(res, 401, 'Email or password is incorrect.');
     issueSession(res, user, input.rememberMe !== false);
+    recordUsageEvent(user.id, 'login', 'account', { isDeveloper: Boolean(user.is_developer) }, req);
     return json(res, 200, { user: accountUser(user) });
   }
   if (url.pathname === '/api/auto-session' && method === 'POST') {
-    let user = currentUser(req);
-    if (!user) {
-      const guestTag = randomBytes(2).toString('hex').toUpperCase();
-      const guestEmail = `guest_${Date.now()}_${guestTag.toLowerCase()}@guest.learninghaus`;
-      const guestName = `Guest-${guestTag}`;
-      const id = Number(
-        db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,created_at) VALUES(?,?,?,?,?)')
-          .run(guestEmail, passwordHash(randomBytes(12).toString('hex')), guestName, '', now())
-          .lastInsertRowid
-      );
-      user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
-      issueSession(res, user, true);
-    }
-    return json(res, 200, { user: accountUser(user) });
+    const existing = currentUser(req);
+    if (!existing) return fail(res, 401, 'Please sign in or create an account first.');
+    return json(res, 200, { user: accountUser(existing) });
   }
   const user = currentUser(req);
   if (!user) return fail(res, 401, 'Sign in to use friends, chat and shared leaderboards.');
   if (url.pathname === '/api/me' && method === 'GET') return json(res, 200, { user: accountUser(user) });
+  if (url.pathname === '/api/analytics/event' && method === 'POST') {
+    const input = await body(req, 8192);
+    const eventType = String(input.eventType || '').trim().slice(0, 64);
+    if (!eventType) return fail(res, 400, 'Missing eventType.');
+    recordUsageEvent(
+      user.id,
+      eventType,
+      String(input.target || '').trim().slice(0, 120),
+      input.meta && typeof input.meta === 'object' ? input.meta : {},
+      req,
+      String(input.language || '')
+    );
+    return json(res, 200, { ok: true });
+  }
+  if (url.pathname === '/api/dev/analytics' && method === 'GET') {
+    if (!user.is_developer) return fail(res, 403, 'Developer access required.');
+    const users = db.prepare('SELECT id, email, display_name, total_xp, is_developer, disabled, created_at, last_active_at FROM users ORDER BY id ASC').all();
+    const eventCounts = db.prepare('SELECT event_type, COUNT(*) AS count FROM usage_events GROUP BY event_type ORDER BY count DESC').all();
+    const recentEvents = db.prepare(`SELECT e.id, e.user_id, u.display_name, e.event_type, e.target, e.device_type, e.language, e.meta_json, e.created_at
+      FROM usage_events e JOIN users u ON u.id=e.user_id ORDER BY e.id DESC LIMIT 200`).all();
+    const quizSummary = db.prepare(`SELECT u.id AS user_id, u.display_name, COUNT(q.id) AS attempts, ROUND(AVG(q.score), 1) AS avg_score,
+      SUM(q.correct) AS total_correct, SUM(q.total_questions) AS total_questions
+      FROM quiz_attempts q JOIN users u ON u.id=q.user_id GROUP BY q.user_id ORDER BY attempts DESC`).all();
+    const partyMatches = db.prepare('SELECT * FROM party_match_logs ORDER BY id DESC LIMIT 100').all();
+    return json(res, 200, {
+      generatedAt: now(),
+      totals: {
+        users: users.length,
+        quizAttempts: Number(db.prepare('SELECT COUNT(*) AS count FROM quiz_attempts').get().count),
+        partyMatches: Number(db.prepare('SELECT COUNT(*) AS count FROM party_match_logs').get().count),
+        usageEvents: Number(db.prepare('SELECT COUNT(*) AS count FROM usage_events').get().count)
+      },
+      users,
+      eventCounts,
+      quizSummary,
+      partyMatches,
+      recentEvents
+    });
+  }
   if (url.pathname.startsWith('/api/account/') && method === 'POST') {
     const action = url.pathname.slice('/api/account/'.length);
     if (!['disable','restore','delete'].includes(action)) return fail(res, 404, 'Account action not found.');
@@ -1029,6 +1137,7 @@ async function api(req, res, url) {
     });
     room.players.set(user.id, buildHumanPartyPlayer());
     partyRooms.set(code, room);
+    recordUsageEvent(user.id, 'party_room_create', code, { title, questionCount: questions.length }, req);
     return json(res, 201, { room: serializePartyRoom(room) });
   }
   if (url.pathname === '/api/party/rooms/join' && method === 'POST') {
@@ -1069,6 +1178,7 @@ async function api(req, res, url) {
         reaction: '',
         reactionTs: 0
       });
+      recordUsageEvent(user.id, 'party_room_join', code, { title: room.title, playerCount: room.players.size }, req);
       notifyPartyMembers(room);
     }
     return json(res, 200, { room: serializePartyRoom(room) });
