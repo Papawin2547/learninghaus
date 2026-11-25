@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearningHaus — Quiz Course Hub (Design Draft)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --green: #3b8146;
+      --green-dark: #2c6535;
+      --green-soft: #ecf6ed;
+      --green-border: #d4e6d6;
+      --gold: #e5a933;
+      --gold-soft: #fff8e6;
+      --ink: #1e2d21;
+      --muted: #607264;
+      --line: #e4ece5;
+      --shadow: 0 6px 20px rgba(24, 52, 29, 0.06);
+      --font: "Space Grotesk", "Noto Sans Thai", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+    }
+
+    /* Top Draft Ribbon */
+    .draft-ribbon {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 18px;
+      background: #1d3522;
+      color: #f4fbf5;
+      font-size: 12.5px;
+    }
+    .draft-ribbon__left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .draft-ribbon__badge {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: #3b8146;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+    .draft-ribbon__controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .draft-ribbon__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+    }
+    .draft-ribbon__btn.is-active {
+      background: #ffffff;
+      color: #1d3522;
+      border-color: #ffffff;
+    }
+
+    /* Authentic LearningHaus 3-Column Shell */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr) 295px;
+      min-height: calc(100vh - 44px);
+      background: var(--bg);
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 26px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #2f6c39;
+      font-weight: 700;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .brand__mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: #ecf6ed;
+      color: var(--green);
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--green-border);
+    }
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .nav__item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      border-radius: 12px;
+      border: 1.5px solid #cfd8d1;
+      background: #ffffff;
+      color: #1e2d21;
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+    .nav__item.is-active {
+      border-color: transparent;
+      background: var(--green);
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 5px 14px rgba(59, 129, 70, 0.25);
+    }
+
+    /* Center Workspace */
+    .center-col {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+    }
+
+    /* STEP 1: QUIZ COURSE HUB */
+    .quiz-hub {
+      padding: 24px 28px 42px;
+      max-width: 920px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .quiz-hub[hidden] { display: none !important; }
+
+    .quiz-hub__header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .quiz-hub__eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 5px;
+    }
+    .quiz-hub__title {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+    }
+    .quiz-hub__sub {
+      margin: 5px 0 0;
+      font-size: 13.5px;
+      color: var(--muted);
+    }
+    .quiz-hub__browse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 15px;
+      border-radius: 12px;
+      border: 1.5px solid var(--green-border);
+      background: #ffffff;
+      color: var(--green-dark);
+      font: 600 13px/1 var(--font);
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(24, 52, 29, 0.05);
+      transition: all 140ms ease;
+    }
+    .quiz-hub__browse-btn:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    /* Hero: Continue Last Played Quiz */
+    .resume-hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 18px;
+      padding: 20px 22px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #25572d 0%, #3b8146 62%, #4f9959 100%);
+      color: #ffffff;
+      box-shadow: 0 12px 28px rgba(37, 87, 45, 0.22);
+      overflow: hidden;
+    }
+    .resume-hero::after {
+      content: "";
+      position: absolute;
+      right: -32px;
+      top: -42px;
+      width: 210px;
+      height: 210px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 68%);
+      pointer-events: none;
+    }
+    .resume-hero__kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+    .resume-hero__title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .resume-hero__meta {
+      margin: 6px 0 12px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.88);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .resume-hero__bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 380px;
+    }
+    .resume-hero__bar {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.24);
+      overflow: hidden;
+    }
+    .resume-hero__bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: #f6d365;
+    }
+    .resume-hero__pct {
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .resume-hero__cta {
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border: 0;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #214e29;
+      font: 700 14px/1 var(--font);
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(14, 38, 18, 0.22);
+      transition: transform 140ms ease, box-shadow 140ms ease;
+    }
+    .resume-hero__cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(14, 38, 18, 0.28);
+    }
+
+    /* Search, Filter & View Controls (Scales to 100+ courses!) */
+    .hub-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+    .hub-toolbar__top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1 1 240px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 11px;
+      border: 1.5px solid #dce6dd;
+      background: #f8fbf8;
+      color: var(--muted);
+    }
+    .search-box:focus-within {
+      border-color: var(--green);
+      background: #ffffff;
+    }
+    .search-box input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      width: 100%;
+      font: 500 13.5px var(--font);
+      color: var(--ink);
+    }
+    .sort-select {
+      height: 40px;
+      padding: 0 26px 0 12px;
+      border-radius: 11px;
+      border: 1.5px solid #dce6dd;
+      background: #ffffff;
+      color: var(--ink);
+      font: 600 12.5px var(--font);
+      cursor: pointer;
+    }
+    .view-toggle {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 11px;
+      background: #eff5f0;
+      border: 1px solid #dce6dd;
+    }
+    .view-toggle button {
+      width: 34px;
+      height: 32px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .view-toggle button.is-active {
+      background: #ffffff;
+      color: var(--green);
+      box-shadow: 0 2px 6px rgba(24, 52, 29, 0.1);
+    }
+    .filter-chips {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1.5px solid #dde8de;
+      background: #f6faf6;
+      color: #35503a;
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .chip:hover { border-color: var(--green); }
+    .chip.is-active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+    .chip__count {
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(59, 129, 70, 0.12);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .chip.is-active .chip__count {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    .results-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12.5px;
+      color: var(--muted);
+      padding: 0 2px;
+    }
+
+    /* Course Grid Mode */
+    .course-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .course-grid.is-list-mode {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .qcard {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1.5px solid #e3ece4;
+      box-shadow: 0 4px 14px rgba(24, 52, 29, 0.04);
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .qcard:hover {
+      transform: translateY(-2px);
+      border-color: var(--green);
+      box-shadow: 0 10px 24px rgba(37, 87, 45, 0.1);
+    }
+    .qcard__top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .qcard__thumb {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      box-shadow: 0 6px 12px rgba(24, 52, 29, 0.14);
+    }
+    .qcard__head {
+      min-width: 0;
+      flex: 1;
+    }
+    .qcard__badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      flex-wrap: wrap;
+    }
+    .qcard__cat {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .qcard__status {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .qcard__status--done {
+      background: #e6f6e8;
+      color: #266b32;
+    }
+    .qcard__status--new {
+      background: #fff6e0;
+      color: #9e6b0c;
+    }
+    .qcard__title {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1.3;
+      color: var(--ink);
+    }
+    .qcard__creator {
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .qcard__pin {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1px solid #e3ece4;
+      background: #f8fbf8;
+      color: #839686;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .qcard__pin.is-pinned {
+      background: var(--gold-soft);
+      border-color: #f0d48a;
+      color: #c98613;
+    }
+
+    .qcard__progress {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .qcard__progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .qcard__progress-labels strong {
+      color: var(--green-dark);
+    }
+    .qcard__bar {
+      height: 7px;
+      border-radius: 999px;
+      background: #e7efe8;
+      overflow: hidden;
+    }
+    .qcard__bar > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #579b60, #3b8146);
+    }
+
+    .qcard__foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid #eef4ef;
+      font-size: 12.5px;
+    }
+    .qcard__chapters {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .qcard__go {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    /* Compact List Mode (for users with 20-50+ saved courses!) */
+    .course-grid.is-list-mode .qcard {
+      flex-direction: row;
+      align-items: center;
+      padding: 12px 14px;
+      gap: 14px;
+    }
+    .course-grid.is-list-mode .qcard__top {
+      flex: 1.3;
+      align-items: center;
+    }
+    .course-grid.is-list-mode .qcard__thumb {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+    }
+    .course-grid.is-list-mode .qcard__progress {
+      width: 170px;
+      flex-shrink: 0;
+    }
+    .course-grid.is-list-mode .qcard__foot {
+      border-top: 0;
+      padding-top: 0;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .course-grid.is-list-mode .qcard__chapters { display: none; }
+
+    /* STEP 2: STAGE MAP WITH CLEAN 1-LINE HEADER */
+    .stage-view {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .stage-view[hidden] { display: none !important; }
+
+    .stage-topbar {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 11px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 4px 12px rgba(24, 52, 29, 0.05);
+      z-index: 10;
+    }
+    .stage-topbar__back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 10px;
+      border: 1.5px solid #d8e6da;
+      background: #f6faf6;
+      color: var(--green-dark);
+      font: 600 13px/1 var(--font);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .stage-topbar__back:hover {
+      background: var(--green-soft);
+      border-color: var(--green);
+    }
+    .stage-topbar__switcher {
+      position: relative;
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      justify-content: center;
+    }
+    .stage-topbar__course-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--green-border);
+      background: #f8fcf8;
+      color: var(--ink);
+      font: 700 13.5px/1.2 var(--font);
+      cursor: pointer;
+    }
+    .stage-topbar__course-btn:hover {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+    .stage-topbar__course-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .stage-topbar__stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding: 6px 11px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    /* Quick Switcher Popover (Optional 1-click jump with search!) */
+    .quick-switcher {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(360px, 90vw);
+      background: #ffffff;
+      border: 1.5px solid #d5e4d7;
+      border-radius: 16px;
+      box-shadow: 0 18px 40px rgba(18, 42, 22, 0.18);
+      padding: 10px;
+      z-index: 30;
+    }
+    .quick-switcher[hidden] { display: none !important; }
+    .quick-switcher__search {
+      width: 100%;
+      height: 36px;
+      padding: 0 11px;
+      border-radius: 9px;
+      border: 1.5px solid #dce6dd;
+      background: #f8fbf8;
+      font: 500 13px var(--font);
+      margin-bottom: 8px;
+      outline: none;
+    }
+    .quick-switcher__search:focus { border-color: var(--green); background: #ffffff; }
+    .quick-switcher__list {
+      max-height: 240px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .quick-switcher__item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      font: 600 13px/1.25 var(--font);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .quick-switcher__item:hover { background: #f2f8f3; }
+    .quick-switcher__item.is-active {
+      background: var(--green-soft);
+      color: var(--green-dark);
+    }
+    .quick-switcher__item small {
+      color: var(--muted);
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* Mock Stage Map Preview */
+    .stage-map-mock {
+      flex: 1;
+      padding: 32px 24px 60px;
+      background: linear-gradient(180deg, #dcefd9 0%, #f5f0da 50%, #ece2c6 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+    .stage-map-mock__banner {
+      padding: 10px 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1.5px solid #d3e5d5;
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(24, 52, 29, 0.08);
+    }
+    .stage-map-mock__banner strong {
+      display: block;
+      font-size: 15px;
+      color: var(--green-dark);
+    }
+    .stage-map-mock__banner span {
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .mock-nodes {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .mock-node {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 28px;
+      font-weight: 700;
+      box-shadow: 0 7px 0 #286132, 0 12px 20px rgba(24, 52, 29, 0.18);
+    }
+    .mock-node--right { transform: translateX(64px); }
+    .mock-node--left { transform: translateX(-64px); }
+    .mock-node--locked {
+      background: #9aa79d;
+      box-shadow: 0 7px 0 #768279;
+    }
+
+    /* Right Info Rail */
+    .right-rail {
+      background: #fafafa;
+      border-left: 1px solid var(--line);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .rail-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 4px 12px rgba(24, 52, 29, 0.06);
+      border: 1px solid #eaf0eb;
+    }
+    .rail-card__title {
+      margin: 0 0 8px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .rail-note {
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--muted);
+      margin: 0;
+    }
+    .rail-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #364d3b;
+    }
+
+    @media (max-width: 1120px) {
+      .app-shell { grid-template-columns: 220px minmax(0, 1fr); }
+      .right-rail { display: none; }
+    }
+    @media (max-width: 780px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .course-grid { grid-template-columns: 1fr; }
+      .resume-hero { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="draft-ribbon">
+    <div class="draft-ribbon__left">
+      <span class="draft-ribbon__badge">UX DESIGN DRAFT</span>
+      <span data-i18n-en="2-Step Quiz Flow: Quiz Course Hub (Scales to 100+ Saved Courses) → Clean Stage Map"
+            data-i18n-th="โฟลว์ Quiz แบบ 2 ขั้นตอน: หน้าเลือกคอร์สทำควิส (รองรับบทเรียนจำนวนมาก) → หน้าแผนที่ด่านแบบคลีน">
+        โฟลว์ Quiz แบบ 2 ขั้นตอน: หน้าเลือกคอร์สทำควิส (รองรับบทเรียนจำนวนมาก) → หน้าแผนที่ด่านแบบคลีน
+      </span>
+    </div>
+    <div class="draft-ribbon__controls">
+      <button class="draft-ribbon__btn is-active" type="button" data-step-btn="hub">1. Quiz Hub</button>
+      <button class="draft-ribbon__btn" type="button" data-step-btn="map">2. Stage Map</button>
+      <button class="draft-ribbon__btn" type="button" data-lang-toggle>EN / ไทย</button>
+    </div>
+  </div>
+
+  <div class="app-shell">
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/><path d="M8 14v.5"/><path d="M16 14v.5"/><path d="M11.25 16.25h1.5L12 17l-.75-.75Z"/></svg>
+        </span>
+        <span>LearningHaus</span>
+      </div>
+      <nav class="nav">
+        <a class="nav__item" href="#home" onclick="return false">Home</a>
+        <a class="nav__item" href="#learn" onclick="return false">Learn</a>
+        <a class="nav__item is-active" href="#quiz" onclick="return false">Quiz</a>
+        <a class="nav__item" href="#achievement" onclick="return false">Achievement</a>
+        <a class="nav__item" href="#profile" onclick="return false">Profile</a>
+        <a class="nav__item" href="#settings" onclick="return false">Settings</a>
+      </nav>
+    </aside>
+
+    <!-- Center Column: Switches cleanly between Step 1 (Quiz Hub) and Step 2 (Stage Map) -->
+    <main class="center-col">
+      <!-- STEP 1: QUIZ COURSE HUB -->
+      <section class="quiz-hub" data-view="hub">
+        <header class="quiz-hub__header">
+          <div>
+            <div class="quiz-hub__eyebrow">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+              <span data-i18n-en="QUIZ LIBRARY" data-i18n-th="คลังควิสของคุณ">คลังควิสของคุณ</span>
+            </div>
+            <h1 class="quiz-hub__title" data-i18n-en="Choose a Course Quiz" data-i18n-th="เลือกบทเรียนที่ต้องการทำควิส">เลือกบทเรียนที่ต้องการทำควิส</h1>
+            <p class="quiz-hub__sub" data-i18n-en="Pick any saved or enrolled course to open its stage map and mini-games." data-i18n-th="เลือกจากบทเรียนที่คุณบันทึกลงคลังหรือลงทะเบียนไว้ เพื่อเข้าสู่แผนที่ด่านและมินิเกมของคอร์สนั้น">เลือกจากบทเรียนที่คุณบันทึกลงคลังหรือลงทะเบียนไว้ เพื่อเข้าสู่แผนที่ด่านและมินิเกมของคอร์สนั้น</p>
+          </div>
+          <button class="quiz-hub__browse-btn" type="button" onclick="alert('Opens Learn Hub to save more courses')">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            <span data-i18n-en="Add Courses from Learn" data-i18n-th="เพิ่มบทเรียนจากหน้า Learn">เพิ่มบทเรียนจากหน้า Learn</span>
+          </button>
+        </header>
+
+        <!-- Continue Playing Hero Spotlight -->
+        <article class="resume-hero" data-resume-hero></article>
+
+        <!-- Search + Sort + View Mode + Filter Chips -->
+        <div class="hub-toolbar">
+          <div class="hub-toolbar__top">
+            <label class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" data-hub-search placeholder="ค้นหาชื่อคอร์ส หมวดหมู่ หรือผู้สร้าง...">
+            </label>
+            <select class="sort-select" data-hub-sort aria-label="Sort courses">
+              <option value="recent" data-i18n-en="Sort: Recently Played" data-i18n-th="เรียงตาม: เล่นล่าสุด">เรียงตาม: เล่นล่าสุด</option>
+              <option value="progress" data-i18n-en="Sort: Progress %" data-i18n-th="เรียงตาม: ความคืบหน้า %">เรียงตาม: ความคืบหน้า %</option>
+              <option value="alpha" data-i18n-en="Sort: Name A–Z" data-i18n-th="เรียงตาม: ชื่อ A–Z">เรียงตาม: ชื่อ A–Z</option>
+            </select>
+            <div class="view-toggle" role="group" aria-label="Layout mode">
+              <button type="button" class="is-active" data-layout-btn="grid" title="Card Grid">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+              </button>
+              <button type="button" data-layout-btn="list" title="Compact List (Great for 20+ courses)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="filter-chips" data-filter-chips></div>
+        </div>
+
+        <div class="results-meta">
+          <span data-results-count></span>
+          <span data-i18n-en="Tip: Pin favorite quizzes to keep them at the top" data-i18n-th="ทิป: กดปักหมุดคอร์สที่ทำบ่อยให้อยู่ด้านบนสุดได้">ทิป: กดปักหมุดคอร์สที่ทำบ่อยให้อยู่ด้านบนสุดได้</span>
+        </div>
+
+        <div class="course-grid" data-course-grid></div>
+      </section>
+
+      <!-- STEP 2: STAGE MAP (CLEAN 1-LINE TOP BAR + QUICK SWITCHER POPOVER) -->
+      <section class="stage-view" data-view="map" hidden>
+        <header class="stage-topbar">
+          <button class="stage-topbar__back" type="button" data-back-to-hub>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            <span data-i18n-en="All Quizzes" data-i18n-th="เลือกคอร์สอื่น">เลือกคอร์สอื่น</span>
+          </button>
+
+          <div class="stage-topbar__switcher">
+            <button class="stage-topbar__course-btn" type="button" data-switcher-toggle aria-expanded="false">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3b8146" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span class="stage-topbar__course-name" data-map-course-name>EU AI Act: Foundations to Enforcement</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="quick-switcher" data-quick-switcher hidden>
+              <input class="quick-switcher__search" type="text" data-switcher-search placeholder="ค้นหาคอร์สเพื่อสลับด่วน...">
+              <div class="quick-switcher__list" data-switcher-list></div>
+            </div>
+          </div>
+
+          <span class="stage-topbar__stat" data-map-course-stat>10 / 80</span>
+        </header>
+
+        <div class="stage-map-mock">
+          <div class="stage-map-mock__banner">
+            <strong data-map-banner-title>EU AI Act: Foundations to Enforcement</strong>
+            <span data-map-banner-sub>Chapter 1 — Foundations &amp; Scope · 8 Chapters</span>
+          </div>
+          <div class="mock-nodes">
+            <div class="mock-node">1</div>
+            <div class="mock-node mock-node--right">2</div>
+            <div class="mock-node">3</div>
+            <div class="mock-node mock-node--left">4</div>
+            <div class="mock-node mock-node--locked">5</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Right Info Rail (Explaining the UX Draft) -->
+    <aside class="right-rail">
+      <div class="rail-card">
+        <h3 class="rail-card__title" data-i18n-en="Why 2-Step Quiz Hub?" data-i18n-th="ทำไมหน้าเลือกควิสก่อนเข้าด่านถึงดีกว่า?">ทำไมหน้าเลือกควิสก่อนเข้าด่านถึงดีกว่า?</h3>
+        <p class="rail-note" data-i18n-en="A horizontal pill bar breaks once learners save 5+ courses. This 2-step Quiz Hub scales cleanly to 100+ courses:" data-i18n-th="แถบปุ่มแนวนอนจะล้นและตัดชื่อทันทีเมื่อมีคอร์สเกิน 4–5 อัน แต่โฟลว์ 2 ขั้นตอนนี้รองรับได้เป็นร้อยบทเรียน:">แถบปุ่มแนวนอนจะล้นและตัดชื่อทันทีเมื่อมีคอร์สเกิน 4–5 อัน แต่โฟลว์ 2 ขั้นตอนนี้รองรับได้เป็นร้อยบทเรียน:</p>
+        <ul class="rail-list">
+          <li data-i18n-en="Continue Hero: 1-click resume of your active quiz course." data-i18n-th="การ์ดเล่นต่อด้านบน: กดเข้าด่านล่าสุดได้ใน 1 คลิก">การ์ดเล่นต่อด้านบน: กดเข้าด่านล่าสุดได้ใน 1 คลิก</li>
+          <li data-i18n-en="Search + Filter + Sort: Find any saved course in seconds." data-i18n-th="ค้นหา + กรองหมวด + เรียงลำดับ หาคอร์สเจอทันที">ค้นหา + กรองหมวด + เรียงลำดับ หาคอร์สเจอทันที</li>
+          <li data-i18n-en="Grid & Compact List modes for huge libraries." data-i18n-th="สลับมุมมอง การ์ด (Grid) หรือ รายการกระชับ (List) ได้">สลับมุมมอง การ์ด (Grid) หรือ รายการกระชับ (List) ได้</li>
+          <li data-i18n-en="Pin button keeps favorite quizzes on top." data-i18n-th="ปักหมุดคอร์สที่ทำบ่อยให้อยู่ด้านบนเสมอ">ปักหมุดคอร์สที่ทำบ่อยให้อยู่ด้านบนเสมอ</li>
+          <li data-i18n-en="Stage Map gets a super clean 1-line bar: Back + Searchable Quick-Switcher." data-i18n-th="หน้าแผนที่ด่านจะโล่งขึ้น เหลือแค่ปุ่มย้อนกลับ + เมนูสลับด่วนแบบค้นหาได้">หน้าแผนที่ด่านจะโล่งขึ้น เหลือแค่ปุ่มย้อนกลับ + เมนูสลับด่วนแบบค้นหาได้</li>
+        </ul>
+      </div>
+
+      <div class="rail-card">
+        <h3 class="rail-card__title" data-i18n-en="Try It Live" data-i18n-th="ลองกดเล่นในดราฟนี้ได้เลย">ลองกดเล่นในดราฟนี้ได้เลย</h3>
+        <p class="rail-note" data-i18n-en="Click any course card to open Step 2 (Stage Map), try the Quick Switcher dropdown in the top bar, or switch between Grid and List view with 12 mock courses!" data-i18n-th="ลองค้นหา กรองหมวด สลับโหมด Grid/List กดปักหมุด และคลิกการ์ดคอร์สเพื่อดูหน้า Step 2 พร้อมเมนูสลับด่วนด้านบนได้เลยครับ">ลองค้นหา กรองหมวด สลับโหมด Grid/List กดปักหมุด และคลิกการ์ดคอร์สเพื่อดูหน้า Step 2 พร้อมเมนูสลับด่วนด้านบนได้เลยครับ</p>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    let lang = "th";
+    let activeStep = "hub";
+    let activeFilter = "all";
+    let searchText = "";
+    let sortBy = "recent";
+    let layoutMode = "grid";
+    let activeCourseId = "eu-ai-act";
+
+    const courses = [
+      { id: "eu-ai-act", title: "EU AI Act: Foundations to Enforcement", cat: "law", catEn: "AI Law", catTh: "กฎหมาย AI", creator: "LearningHaus Official", chapters: 8, cleared: 10, total: 80, pinned: true, lastOrder: 1, color: "linear-gradient(135deg,#27532d,#3c7d42)", firstCh: "Foundations & Scope" },
+      { id: "ai-literacy-work", title: "AI Literacy in the Workplace", cat: "practical", catEn: "Practical Use", catTh: "การใช้งานจริง", creator: "LearningHaus Official", chapters: 5, cleared: 18, total: 50, pinned: true, lastOrder: 2, color: "linear-gradient(135deg,#245032,#4d8b55)", firstCh: "What is AI Literacy (Article 4)?" },
+      { id: "deepfake-transparency", title: "Deepfakes & Synthetic Media Rules", cat: "ethics", catEn: "Ethics & Safety", catTh: "จริยธรรม & ความปลอดภัย", creator: "KittyCipher", chapters: 4, cleared: 40, total: 40, pinned: false, lastOrder: 3, color: "linear-gradient(135deg,#1d3c47,#37786f)", firstCh: "Recognizing Synthetic Media" },
+      { id: "gdpr-meets-ai", title: "PDPA / GDPR Meets Generative AI", cat: "law", catEn: "AI Law", catTh: "กฎหมาย AI", creator: "LawWhisker", chapters: 6, cleared: 6, total: 60, pinned: false, lastOrder: 4, color: "linear-gradient(135deg,#2d4c33,#6d945b)", firstCh: "Personal Data Inside Prompts" },
+      { id: "ethical-prompt-studio", title: "Responsible Prompt Design", cat: "practical", catEn: "Practical Use", catTh: "การใช้งานจริง", creator: "SakuraPaws", chapters: 3, cleared: 0, total: 30, pinned: false, lastOrder: 5, color: "linear-gradient(135deg,#3c3a62,#346739)", firstCh: "Structuring Clear Prompts" },
+      { id: "ai-risk-clinic", title: "Quick Risk Assessment Lab", cat: "ethics", catEn: "Ethics & Safety", catTh: "จริยธรรม & ความปลอดภัย", creator: "RoyalSiamese", chapters: 8, cleared: 24, total: 80, pinned: false, lastOrder: 6, color: "linear-gradient(135deg,#54452b,#3c7d42)", firstCh: "Unacceptable vs High-Risk" },
+      { id: "web-dev-basics", title: "Modern Web & TypeScript Essentials", cat: "tech", catEn: "Programming", catTh: "เขียนโปรแกรม", creator: "DevMeow", chapters: 6, cleared: 32, total: 60, pinned: false, lastOrder: 7, color: "linear-gradient(135deg,#1f3a6b,#3f72af)", firstCh: "HTML, CSS & Responsive Grids" },
+      { id: "cell-biology", title: "Cell Biology & Genetics Foundations", cat: "science", catEn: "Science", catTh: "วิทยาศาสตร์", creator: "BioTabby", chapters: 5, cleared: 50, total: 50, pinned: false, lastOrder: 8, color: "linear-gradient(135deg,#18594c,#2ea388)", firstCh: "Organelles & Cell Membranes" },
+      { id: "academic-english", title: "Academic English & Critical Reading", cat: "language", catEn: "Language", catTh: "ภาษา", creator: "LinguaCat", chapters: 4, cleared: 12, total: 40, pinned: false, lastOrder: 9, color: "linear-gradient(135deg,#6b3556,#a6527f)", firstCh: "Identifying Thesis & Arguments" },
+      { id: "cybersecurity-101", title: "Everyday Cybersecurity & Phishing Defense", cat: "tech", catEn: "Programming", catTh: "เขียนโปรแกรม", creator: "ShieldPaws", chapters: 5, cleared: 0, total: 50, pinned: false, lastOrder: 10, color: "linear-gradient(135deg,#2a2b4c,#4c518a)", firstCh: "Spotting Phishing & Social Traps" },
+      { id: "data-viz-story", title: "Data Storytelling & Visual Analytics", cat: "practical", catEn: "Practical Use", catTh: "การใช้งานจริง", creator: "ChartCalico", chapters: 4, cleared: 16, total: 40, pinned: false, lastOrder: 11, color: "linear-gradient(135deg,#784421,#bf7334)", firstCh: "Choosing Honest Charts" },
+      { id: "climate-earth", title: "Climate Systems & Sustainability", cat: "science", catEn: "Science", catTh: "วิทยาศาสตร์", creator: "EcoWhisker", chapters: 6, cleared: 0, total: 60, pinned: false, lastOrder: 12, color: "linear-gradient(135deg,#26543a,#559c6b)", firstCh: "Carbon Cycle Basics" }
+    ];
+
+    const t = (en, th) => (lang === "th" ? th : en);
+
+    const syncStaticI18n = () => {
+      document.querySelectorAll("[data-i18n-en]").forEach((el) => {
+        el.textContent = lang === "th" ? el.dataset.i18nTh : el.dataset.i18nEn;
+      });
+      const searchEl = document.querySelector("[data-hub-search]");
+      if (searchEl) searchEl.placeholder = t("Search saved courses, topics, or creators...", "ค้นหาชื่อคอร์ส หมวดหมู่ หรือผู้สร้าง...");
+      const swSearch = document.querySelector("[data-switcher-search]");
+      if (swSearch) swSearch.placeholder = t("Search saved courses...", "ค้นหาคอร์สเพื่อสลับด่วน...");
+    };
+
+    const renderResumeHero = () => {
+      const c = courses.find((x) => x.id === activeCourseId) || courses[0];
+      const pct = Math.round((c.cleared / c.total) * 100);
+      const nextStage = Math.min(c.total, c.cleared + 1);
+      const hero = document.querySelector("[data-resume-hero]");
+      hero.innerHTML = `
+        <div>
+          <span class="resume-hero__kicker">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            ${t("CONTINUE LAST QUIZ", "เล่นควิสล่าสุดต่อ")}
+          </span>
+          <h2 class="resume-hero__title">${c.title}</h2>
+          <div class="resume-hero__meta">
+            <span>${t(`Stage ${nextStage} of ${c.total}`, `ด่านที่ ${nextStage} จาก ${c.total}`)}</span>
+            <span>·</span>
+            <span>${t(`${c.chapters} Chapters`, `${c.chapters} บทเรียน`)}</span>
+          </div>
+          <div class="resume-hero__bar-wrap">
+            <div class="resume-hero__bar"><span style="width:${pct}%"></span></div>
+            <span class="resume-hero__pct">${pct}%</span>
+          </div>
+        </div>
+        <button class="resume-hero__cta" type="button" data-open-map="${c.id}">
+          <span>${t("Open Stage Map", "เข้าสู่แผนที่ด่าน")}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      `;
+    };
+
+    const renderChips = () => {
+      const counts = {
+        all: courses.length,
+        pinned: courses.filter((c) => c.pinned).length,
+        progress: courses.filter((c) => c.cleared > 0 && c.cleared < c.total).length,
+        done: courses.filter((c) => c.cleared >= c.total).length,
+        law: courses.filter((c) => c.cat === "law").length,
+        ethics: courses.filter((c) => c.cat === "ethics").length,
+        practical: courses.filter((c) => c.cat === "practical").length,
+        tech: courses.filter((c) => c.cat === "tech").length,
+        science: courses.filter((c) => c.cat === "science").length,
+        language: courses.filter((c) => c.cat === "language").length
+      };
+      const defs = [
+        ["all", t("All Saved", "ทั้งหมด")],
+        ["pinned", t("Pinned", "ปักหมุด")],
+        ["progress", t("In Progress", "กำลังทำ")],
+        ["done", t("Completed", "ผ่านครบแล้ว")],
+        ["law", t("AI Law", "กฎหมาย AI")],
+        ["ethics", t("Ethics", "จริยธรรม")],
+        ["practical", t("Practical", "การใช้งานจริง")],
+        ["tech", t("Programming", "เขียนโปรแกรม")],
+        ["science", t("Science", "วิทยาศาสตร์")],
+        ["language", t("Language", "ภาษา")]
+      ];
+      document.querySelector("[data-filter-chips]").innerHTML = defs
+        .map(([id, label]) => `
+          <button class="chip${activeFilter === id ? " is-active" : ""}" type="button" data-filter="${id}">
+            <span>${label}</span>
+            <span class="chip__count">${counts[id]}</span>
+          </button>
+        `).join("");
+    };
+
+    const renderGrid = () => {
+      const q = searchText.trim().toLowerCase();
+      let list = courses.filter((c) => {
+        if (activeFilter === "pinned" && !c.pinned) return false;
+        if (activeFilter === "progress" && !(c.cleared > 0 && c.cleared < c.total)) return false;
+        if (activeFilter === "done" && c.cleared < c.total) return false;
+        if (!["all", "pinned", "progress", "done"].includes(activeFilter) && c.cat !== activeFilter) return false;
+        if (!q) return true;
+        return c.title.toLowerCase().includes(q) || c.creator.toLowerCase().includes(q) || c.catEn.toLowerCase().includes(q) || c.catTh.toLowerCase().includes(q);
+      });
+
+      list.sort((a, b) => {
+        if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+        if (sortBy === "progress") return (b.cleared / b.total) - (a.cleared / a.total);
+        if (sortBy === "alpha") return a.title.localeCompare(b.title);
+        return a.lastOrder - b.lastOrder;
+      });
+
+      document.querySelector("[data-results-count]").textContent = t(
+        `Showing ${list.length} of ${courses.length} saved courses`,
+        `แสดง ${list.length} จาก ${courses.length} บทเรียนในคลัง`
+      );
+
+      const grid = document.querySelector("[data-course-grid]");
+      grid.classList.toggle("is-list-mode", layoutMode === "list");
+      grid.innerHTML = list.map((c) => {
+        const pct = Math.round((c.cleared / c.total) * 100);
+        const statusTag = pct >= 100
+          ? `<span class="qcard__status qcard__status--done">${t("Completed", "ครบทุกด่าน")}</span>`
+          : pct === 0
+            ? `<span class="qcard__status qcard__status--new">${t("New", "ยังไม่เริ่ม")}</span>`
+            : "";
+        return `
+          <article class="qcard" data-open-map="${c.id}">
+            <div class="qcard__top">
+              <div class="qcard__thumb" style="background:${c.color}">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              </div>
+              <div class="qcard__head">
+                <div class="qcard__badges">
+                  <span class="qcard__cat">${t(c.catEn, c.catTh)}</span>
+                  ${statusTag}
+                </div>
+                <h3 class="qcard__title">${c.title}</h3>
+                <div class="qcard__creator">${c.creator}</div>
+              </div>
+              <button class="qcard__pin${c.pinned ? " is-pinned" : ""}" type="button" data-pin="${c.id}" title="${t("Pin to top", "ปักหมุดไว้ด้านบน")}">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="${c.pinned ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg>
+              </button>
+            </div>
+            <div class="qcard__progress">
+              <div class="qcard__progress-labels">
+                <span>${t(`${c.cleared} / ${c.total} stages`, `ผ่านแล้ว ${c.cleared} / ${c.total} ด่าน`)}</span>
+                <strong>${pct}%</strong>
+              </div>
+              <div class="qcard__bar"><span style="width:${pct}%"></span></div>
+            </div>
+            <div class="qcard__foot">
+              <span class="qcard__chapters">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                ${t(`${c.chapters} Chapters`, `${c.chapters} บท`)}
+              </span>
+              <span class="qcard__go">
+                ${t("Play Quiz", "เข้าด่าน")}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </span>
+            </div>
+          </article>
+        `;
+      }).join("");
+    };
+
+    const renderMapHeader = () => {
+      const c = courses.find((x) => x.id === activeCourseId) || courses[0];
+      document.querySelector("[data-map-course-name]").textContent = c.title;
+      document.querySelector("[data-map-course-stat]").textContent = `${c.cleared} / ${c.total}`;
+      document.querySelector("[data-map-banner-title]").textContent = c.title;
+      document.querySelector("[data-map-banner-sub]").textContent = `Chapter 1 — ${c.firstCh} · ${t(`${c.chapters} Chapters`, `${c.chapters} บทเรียน`)}`;
+      renderQuickSwitcherList();
+    };
+
+    const renderQuickSwitcherList = (filterQ = "") => {
+      const q = filterQ.trim().toLowerCase();
+      const filtered = courses.filter((c) => !q || c.title.toLowerCase().includes(q) || c.catEn.toLowerCase().includes(q) || c.catTh.toLowerCase().includes(q));
+      document.querySelector("[data-switcher-list]").innerHTML = filtered.map((c) => `
+        <button class="quick-switcher__item${c.id === activeCourseId ? " is-active" : ""}" type="button" data-quick-pick="${c.id}">
+          <span>${c.title}</span>
+          <small>${c.chapters} Ch.</small>
+        </button>
+      `).join("");
+    };
+
+    const setStep = (step) => {
+      activeStep = step;
+      document.querySelector('[data-view="hub"]').hidden = step !== "hub";
+      document.querySelector('[data-view="map"]').hidden = step !== "map";
+      document.querySelectorAll("[data-step-btn]").forEach((b) => b.classList.toggle("is-active", b.dataset.stepBtn === step));
+      document.querySelector("[data-quick-switcher]").hidden = true;
+      renderMapHeader();
+    };
+
+    document.addEventListener("click", (e) => {
+      const pinBtn = e.target.closest("[data-pin]");
+      if (pinBtn) {
+        e.stopPropagation();
+        const c = courses.find((x) => x.id === pinBtn.dataset.pin);
+        if (c) c.pinned = !c.pinned;
+        renderChips();
+        renderGrid();
+        return;
+      }
+      const openMap = e.target.closest("[data-open-map]");
+      if (openMap) {
+        activeCourseId = openMap.dataset.openMap;
+        renderResumeHero();
+        setStep("map");
+        return;
+      }
+      const filterBtn = e.target.closest("[data-filter]");
+      if (filterBtn) {
+        activeFilter = filterBtn.dataset.filter;
+        renderChips();
+        renderGrid();
+        return;
+      }
+      const layoutBtn = e.target.closest("[data-layout-btn]");
+      if (layoutBtn) {
+        layoutMode = layoutBtn.dataset.layoutBtn;
+        document.querySelectorAll("[data-layout-btn]").forEach((b) => b.classList.toggle("is-active", b.dataset.layoutBtn === layoutMode));
+        renderGrid();
+        return;
+      }
+      const stepBtn = e.target.closest("[data-step-btn]");
+      if (stepBtn) {
+        setStep(stepBtn.dataset.stepBtn);
+        return;
+      }
+      if (e.target.closest("[data-back-to-hub]")) {
+        setStep("hub");
+        return;
+      }
+      if (e.target.closest("[data-lang-toggle]")) {
+        lang = lang === "th" ? "en" : "th";
+        syncStaticI18n();
+        renderResumeHero();
+        renderChips();
+        renderGrid();
+        renderMapHeader();
+        return;
+      }
+      const swToggle = e.target.closest("[data-switcher-toggle]");
+      if (swToggle) {
+        const pop = document.querySelector("[data-quick-switcher]");
+        pop.hidden = !pop.hidden;
+        swToggle.setAttribute("aria-expanded", String(!pop.hidden));
+        if (!pop.hidden) document.querySelector("[data-switcher-search]").focus();
+        return;
+      }
+      const quickPick = e.target.closest("[data-quick-pick]");
+      if (quickPick) {
+        activeCourseId = quickPick.dataset.quickPick;
+        document.querySelector("[data-quick-switcher]").hidden = true;
+        renderResumeHero();
+        renderMapHeader();
+        return;
+      }
+      if (!e.target.closest(".stage-topbar__switcher")) {
+        document.querySelector("[data-quick-switcher]").hidden = true;
+      }
+    });
+
+    document.querySelector("[data-hub-search]").addEventListener("input", (e) => {
+      searchText = e.target.value;
+      renderGrid();
+    });
+    document.querySelector("[data-hub-sort]").addEventListener("change", (e) => {
+      sortBy = e.target.value;
+      renderGrid();
+    });
+    document.querySelector("[data-switcher-search]").addEventListener("input", (e) => {
+      renderQuickSwitcherList(e.target.value);
+    });
+
+    syncStaticI18n();
+    renderResumeHero();
+    renderChips();
+    renderGrid();
+    renderMapHeader();
+  </script>
+</body>
+</html>

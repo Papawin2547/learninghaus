@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearningHaus — Universal Mini-Game Drafts (Any Subject)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f9f6;
+      --surface: #ffffff;
+      --surface-soft: #f0f6f0;
+      --border: #dbe7dc;
+      --primary: #34703b;
+      --primary-hover: #295c2f;
+      --primary-soft: #e7f4e8;
+      --danger: #c63838;
+      --danger-soft: #fdecec;
+      --amber: #c2781a;
+      --amber-soft: #fef4e4;
+      --indigo: #3b4fb8;
+      --indigo-soft: #eef1fc;
+      --ink: #18291b;
+      --muted: #5b705e;
+      --shadow: 0 10px 28px rgba(27, 56, 31, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Noto Sans Thai", system-ui, sans-serif;
+      background: radial-gradient(circle at top right, #e9f5ea 0%, var(--bg) 52%);
+      color: var(--ink);
+    }
+
+    .shell {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 22px 20px 64px;
+    }
+
+    /* Top Bar */
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--primary);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 6px 16px rgba(52, 112, 59, 0.28);
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .brand p {
+      margin: 2px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--ink);
+      font: 700 12.5px/1 inherit;
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .pill-btn:hover { border-color: #9ec8a2; background: var(--surface-soft); }
+    .pill-btn.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+    /* Subject Pack Switcher Bar */
+    .subject-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #eef7ef 0%, #ffffff 100%);
+      border: 1.5px solid #cfe3d1;
+    }
+    .subject-bar__label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .subject-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .subject-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 33px;
+      padding: 0 13px;
+      border-radius: 999px;
+      border: 1.5px solid #c9decb;
+      background: #fff;
+      color: #315336;
+      font: 700 12px/1 inherit;
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .subject-chip:hover { background: #f2faf3; border-color: #8bc090; }
+    .subject-chip.is-active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(52, 112, 59, 0.24);
+    }
+
+    /* Stage Selector Tabs */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+      padding: 10px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      box-shadow: 0 4px 12px rgba(27, 56, 31, 0.05);
+    }
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      border: 1.5px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font: 700 12.5px/1.2 inherit;
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .tab-btn:hover { background: var(--surface-soft); color: var(--ink); }
+    .tab-btn.is-active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(52, 112, 59, 0.26);
+    }
+    .tab-stage {
+      display: inline-grid;
+      place-items: center;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(52, 112, 59, 0.12);
+      color: var(--primary);
+      font-size: 10.5px;
+      font-weight: 800;
+    }
+    .tab-btn.is-active .tab-stage {
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+    }
+
+    /* Game Stage Shell */
+    .stage-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .stage-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, #f3faf3 0%, #ffffff 100%);
+      border-bottom: 1.5px solid #e6f0e7;
+    }
+    .stage-head__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stage-badge {
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .stage-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .stage-sub {
+      margin: 3px 0 0;
+      font-size: 12.5px;
+      color: var(--muted);
+    }
+    .stage-stats {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .stat-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .stage-body {
+      padding: 24px;
+      min-height: 390px;
+    }
+    .schema-foot {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 24px;
+      background: #f8fbf8;
+      border-top: 1.5px solid #e7f0e8;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .schema-foot code {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: #e9f3ea;
+      color: #215728;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
+
+    .feedback-bar {
+      margin-top: 16px;
+      padding: 11px 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--surface-soft);
+      color: var(--primary);
+      border: 1.5px solid #cfe4d1;
+    }
+    .feedback-bar.is-error {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: #f3c1c1;
+    }
+    .feedback-bar.is-win {
+      background: linear-gradient(135deg, #e6f6e8 0%, #f5fcf6 100%);
+      color: #1f5826;
+      border-color: #7cc083;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex: none;
+      white-space: nowrap;
+      height: 40px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 999px;
+      background: var(--primary);
+      color: #fff;
+      font: 700 13px/1 inherit;
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+
+    /* GAME 1: PAIR MATCH */
+    .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .match-col { display: flex; flex-direction: column; gap: 10px; }
+    .match-col__label {
+      font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 2px;
+    }
+    .match-item {
+      width: 100%; padding: 14px 16px; border-radius: 14px;
+      border: 2px solid var(--border); background: #fff; text-align: left;
+      font: 700 13.5px/1.35 inherit; color: var(--ink); cursor: pointer;
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      transition: all 140ms ease;
+    }
+    .match-item:hover:not(:disabled) { border-color: #8bc090; background: #f8fcf8; }
+    .match-item.is-selected { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 3px rgba(52,112,59,0.14); }
+    .match-item.is-matched { border-color: #84c18b; background: #edf8ee; color: #275b2d; opacity: 0.78; cursor: default; }
+    .match-item.is-wrong { border-color: var(--danger); background: var(--danger-soft); animation: shake 260ms ease; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+    /* GAME 2: RAPID STAMP */
+    .desk-wrap { max-width: 640px; margin: 0 auto; text-align: center; }
+    .case-file {
+      position: relative; padding: 26px 26px 56px; border-radius: 18px;
+      border: 2px solid #d9e4d9; background: linear-gradient(180deg, #fcfdf9 0%, #f5f8f2 100%);
+      box-shadow: 0 12px 24px rgba(24, 48, 28, 0.08); text-align: left; overflow: hidden;
+    }
+    .case-file__meta {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11.5px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.06em; color: var(--muted); margin-bottom: 10px;
+    }
+    .case-file__title { margin: 0 0 8px; font-size: 19px; font-weight: 800; }
+    .case-file__desc { margin: 0; font-size: 14px; line-height: 1.55; color: #3a4f3d; }
+    .stamp-mark {
+      position: absolute; bottom: 14px; right: 20px; padding: 6px 14px;
+      border-radius: 10px; border: 4px solid currentColor;
+      font-size: 15px; font-weight: 900; letter-spacing: 0.08em;
+      transform: rotate(-8deg) scale(1.2); opacity: 0; pointer-events: none;
+      transition: all 180ms cubic-bezier(0.2, 0.9, 0.3, 1.2);
+    }
+    .stamp-mark.is-visible { opacity: 0.94; transform: rotate(-6deg) scale(1); }
+    .stamp-mark.is-left { color: #247230; background: rgba(231, 248, 233, 0.94); }
+    .stamp-mark.is-right { color: #c63434; background: rgba(253, 234, 234, 0.94); }
+    .stamp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+    .stamp-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 52px; border-radius: 14px; border: 2px solid;
+      font: 800 14.5px/1 inherit; cursor: pointer; transition: all 140ms ease;
+    }
+    .stamp-btn--left { background: #edf9ee; border-color: #6ab572; color: #1f5f28; }
+    .stamp-btn--left:hover:not(:disabled) { background: #2f7237; border-color: #2f7237; color: #fff; }
+    .stamp-btn--right { background: #fef0f0; border-color: #e68a8a; color: #b42828; }
+    .stamp-btn--right:hover:not(:disabled) { background: #c63838; border-color: #c63838; color: #fff; }
+
+    /* GAME 3: CATEGORY SORT */
+    .sort-tray {
+      padding: 16px; border-radius: 16px; background: var(--surface-soft);
+      border: 1.5px dashed #bad4bd; margin-bottom: 18px; text-align: center;
+    }
+    .sort-active-card {
+      display: inline-flex; flex-direction: column; gap: 4px; max-width: 460px;
+      padding: 14px 20px; border-radius: 14px; background: #fff;
+      border: 2px solid var(--primary); box-shadow: 0 6px 16px rgba(52, 112, 59, 0.14);
+    }
+    .sort-active-card strong { font-size: 15px; }
+    .sort-active-card span { font-size: 12.5px; color: var(--muted); }
+    .bucket-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .bucket-btn {
+      display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+      min-height: 150px; padding: 14px; border-radius: 16px;
+      border: 2px solid var(--border); background: #fff; text-align: left;
+      cursor: pointer; transition: all 140ms ease;
+    }
+    .bucket-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    .bucket-btn.tone-red { border-top: 5px solid #c63838; }
+    .bucket-btn.tone-amber { border-top: 5px solid #d97706; }
+    .bucket-btn.tone-blue { border-top: 5px solid #3b6fd8; }
+    .bucket-btn.tone-green { border-top: 5px solid #2f8541; }
+    .bucket-btn h4 { margin: 0; font-size: 13.5px; font-weight: 800; }
+    .bucket-btn small { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+    .bucket-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; width: 100%; }
+    .bucket-chip {
+      padding: 3px 8px; border-radius: 999px; background: var(--primary-soft);
+      color: var(--primary); font-size: 11px; font-weight: 700;
+    }
+
+    /* GAME 4: DECISION PATH */
+    .meter-box {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding: 12px 16px; border-radius: 14px; background: var(--surface-soft);
+    }
+    .meter-track { flex: 1; height: 10px; border-radius: 999px; background: #dce7dd; overflow: hidden; }
+    .meter-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #4b9453, #2b6b33); transition: width 260ms ease; }
+    .scenario-bubble {
+      padding: 18px 20px; border-radius: 16px; border: 1.5px solid var(--border);
+      background: #fbfdfb; margin-bottom: 14px;
+    }
+    .scenario-speaker {
+      display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px;
+      border-radius: 999px; background: var(--indigo-soft); color: var(--indigo);
+      font-size: 11.5px; font-weight: 800; margin-bottom: 8px;
+    }
+    .scenario-bubble p { margin: 0; font-size: 14.5px; line-height: 1.55; }
+    .scenario-choices { display: grid; gap: 10px; }
+    .choice-card {
+      width: 100%; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--border);
+      background: #fff; text-align: left; font: 700 13.5px/1.4 inherit; color: var(--ink);
+      cursor: pointer; transition: all 140ms ease;
+    }
+    .choice-card:hover { border-color: var(--primary); background: #f5fbf5; }
+
+    /* GAME 5: RAPID BLITZ */
+    .sprint-card {
+      max-width: 640px; margin: 0 auto; padding: 26px; border-radius: 18px;
+      border: 2px solid var(--border); background: linear-gradient(180deg, #ffffff 0%, #f6fbf6 100%);
+      text-align: center;
+    }
+    .combo-pill {
+      display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px;
+      border-radius: 999px; background: var(--amber-soft); color: var(--amber);
+      font-size: 12px; font-weight: 800; margin-bottom: 14px;
+    }
+    .sprint-statement { margin: 0 0 22px; font-size: 18.5px; font-weight: 800; line-height: 1.45; }
+
+    /* GAME 6: SPOT THE CLUES */
+    .mock-spec { border-radius: 18px; border: 2px solid #d5e2d7; background: #fbfdfb; overflow: hidden; }
+    .mock-spec__bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 18px; background: #1e3322; color: #fff; font-size: 13px; font-weight: 700;
+    }
+    .mock-spec__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 18px; }
+    .hotspot {
+      padding: 14px 16px; border-radius: 14px; border: 2px dashed #c2d4c4;
+      background: #fff; text-align: left; cursor: pointer; transition: all 140ms ease;
+    }
+    .hotspot:hover:not(:disabled) { border-style: solid; border-color: var(--primary); }
+    .hotspot strong { display: block; font-size: 13.5px; margin-bottom: 4px; color: var(--ink); }
+    .hotspot span { display: block; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+    .hotspot.is-flag-found { border-style: solid; border-color: var(--danger); background: var(--danger-soft); }
+    .hotspot.is-safe-click { border-style: solid; border-color: #7bb882; background: #eef8ef; }
+
+    /* GAME 7: STEP SEQUENCE */
+    .order-slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+    .order-slot {
+      min-height: 92px; padding: 12px; border-radius: 14px; border: 2px dashed #bdd5c0;
+      background: var(--surface-soft); display: flex; flex-direction: column; gap: 6px;
+    }
+    .order-slot.is-filled { border-style: solid; border-color: var(--primary); background: #eef8ef; }
+    .order-slot__num { font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase; }
+    .order-slot__text { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+    .order-pool { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .order-tile {
+      padding: 14px 16px; border-radius: 14px; border: 2px solid var(--border);
+      background: #fff; font: 700 13.5px/1.35 inherit; text-align: left; color: var(--ink);
+      cursor: pointer; transition: all 140ms ease;
+    }
+    .order-tile:hover:not(:disabled) { border-color: var(--primary); background: #f6fbf6; }
+    .order-tile:disabled { opacity: 0.45; cursor: default; }
+
+    @media (max-width: 780px) {
+      .match-grid, .bucket-grid, .mock-spec__grid, .order-slots, .order-pool { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="12" x="3" y="6" rx="2"/><path d="M7 12h4"/><path d="M9 10v4"/><circle cx="15" cy="11" r="1"/><circle cx="17" cy="13" r="1"/></svg>
+        </span>
+        <div>
+          <h1 id="page-title">Universal Mini-Game Templates</h1>
+          <p id="page-sub">Reusable across ANY course subject — switch the demo subject pack below to test the same 7 engines</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="pill-btn is-active" type="button" data-lang="en">English (EN)</button>
+        <button class="pill-btn" type="button" data-lang="th">ภาษาไทย (TH)</button>
+      </div>
+    </header>
+
+    <!-- LIVE SUBJECT SWITCHER -->
+    <section class="subject-bar" aria-label="Sample subject packs">
+      <span class="subject-bar__label" id="subject-bar-label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        <span>Try Any Subject Pack:</span>
+      </span>
+      <div class="subject-chips" id="subject-chips"></div>
+    </section>
+
+    <nav class="tabs" id="game-tabs" aria-label="Universal mini-game engines"></nav>
+
+    <main class="stage-card">
+      <div class="stage-head">
+        <div class="stage-head__left">
+          <span class="stage-badge" id="stage-badge">Stage 2</span>
+          <div>
+            <h2 class="stage-title" id="stage-title">Pair Match</h2>
+            <p class="stage-sub" id="stage-sub"></p>
+          </div>
+        </div>
+        <div class="stage-stats">
+          <span class="stat-chip" id="stage-score">Score: 0</span>
+          <button class="pill-btn" type="button" id="stage-reset">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            <span id="reset-label">Reset</span>
+          </button>
+        </div>
+      </div>
+      <div class="stage-body" id="stage-body"></div>
+      <footer class="schema-foot" id="schema-foot"></footer>
+    </main>
+  </div>
+
+  <script>
+    let lang = "en";
+    let activeSubject = "ai";
+    let activeGame = "matching";
+    const t = (en, th) => (lang === "th" ? th : en);
+
+    const SUBJECTS = [
+      { id: "ai", nameEn: "AI Law", nameTh: "กฎหมาย AI" },
+      { id: "science", nameEn: "Biology & Science", nameTh: "วิทยาศาสตร์ & ชีววิทยา" },
+      { id: "coding", nameEn: "Web Programming", nameTh: "การเขียนโปรแกรม" },
+      { id: "english", nameEn: "English Language", nameTh: "ภาษาอังกฤษ" }
+    ];
+
+    const GAMES = [
+      {
+        id: "matching",
+        stageEn: "Stage 2", stageTh: "ด่าน 2",
+        nameEn: "Pair Match", nameTh: "จับคู่ความสัมพันธ์",
+        subEn: "Universal 1-to-1 matching: link terms, formulas, vocabulary, or concepts to their meanings.",
+        subTh: "เอนจินจับคู่แบบสากล: เชื่อมคำศัพท์ สูตร กฎหมาย หรือแนวคิดกับความหมายที่ตรงกัน",
+        schemaEn: "Creator Template: leftColumnLabel, rightColumnLabel, pairs[{ left, right }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: leftColumnLabel, rightColumnLabel, pairs[{ left, right }]"
+      },
+      {
+        id: "stamp",
+        stageEn: "Stage 3", stageTh: "ด่าน 3",
+        nameEn: "Rapid Stamp", nameTh: "ประทับตราแยกฝั่ง",
+        subEn: "Fast 2-choice judgment stamp with customizable labels (Allow/Ban, Valid/Bug, Correct/Error, etc.).",
+        subTh: "เกมประทับตราตัดสิน 2 ฝั่งที่ปรับชื่อตราประทับได้ทุกวิชา (อนุญาต/ห้าม, ถูก/ผิด, ผ่าน/แก้)",
+        schemaEn: "Creator Template: leftStampLabel, rightStampLabel, cards[{ code, title, desc, answer, explain }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: leftStampLabel, rightStampLabel, cards[{ code, title, desc, answer, explain }]"
+      },
+      {
+        id: "sorting",
+        stageEn: "Stage 4", stageTh: "ด่าน 4",
+        nameEn: "Category Sort", nameTh: "คัดแยกหมวดหมู่",
+        subEn: "Sort incoming cards into 2–4 custom category buckets (Risk Tiers, Parts of Speech, Tech Layers, etc.).",
+        subTh: "แยกการ์ดลงกล่องหมวดหมู่ 2–4 กล่อง ปรับชื่อกล่องได้อิสระตามทุกวิชา",
+        schemaEn: "Creator Template: buckets[{ id, title, subtitle, tone }], items[{ name, hint, bucketId }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: buckets[{ id, title, subtitle, tone }], items[{ name, hint, bucketId }]"
+      },
+      {
+        id: "scenario",
+        stageEn: "Stage 5", stageTh: "ด่าน 5",
+        nameEn: "Decision Path", nameTh: "เส้นทางตัดสินใจ",
+        subEn: "Interactive multi-step dialogue with a custom score meter (Compliance, Lab Safety, Code Health, Fluency).",
+        subTh: "สถานการณ์จำลองหลายขั้นตอนพร้อมแถบวัดผลที่ตั้งชื่อได้ตามวิชา",
+        schemaEn: "Creator Template: meterLabel, steps[{ speaker, prompt, choices[{ text, delta, note }] }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: meterLabel, steps[{ speaker, prompt, choices[{ text, delta, note }] }]"
+      },
+      {
+        id: "sprint",
+        stageEn: "Stage 6", stageTh: "ด่าน 6",
+        nameEn: "Rapid Blitz", nameTh: "สปรินต์จริงหรือหลอก",
+        subEn: "High-speed True/False streak challenge with combo multipliers — works for every single subject.",
+        subTh: "ตอบเร็ว จริง / เท็จ สะสมคอมโบคูณคะแนน — ใช้ได้กับทุกบทเรียนทันที",
+        schemaEn: "Creator Template: statements[{ text, isTrue }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: statements[{ text, isTrue }]"
+      },
+      {
+        id: "inspector",
+        stageEn: "Stage 7", stageTh: "ด่าน 7",
+        nameEn: "Spot the Clues", nameTh: "นักสืบจับจุดสำคัญ",
+        subEn: "Inspect a realistic artifact (product spec, code PR, lab sheet, email) and tap the hidden target clues.",
+        subTh: "ตรวจสอบเอกสาร/โค้ด/บทความจำลอง แล้วคลิกจับจุดผิดหรือจุดสำคัญที่ซ่อนอยู่",
+        schemaEn: "Creator Template: artifactTitle, goalPrompt, hotspots[{ title, desc, isTarget }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: artifactTitle, goalPrompt, hotspots[{ title, desc, isTarget }]"
+      },
+      {
+        id: "order",
+        stageEn: "Stage 9", stageTh: "ด่าน 9",
+        nameEn: "Step Sequence", nameTh: "เรียงลำดับขั้นตอน",
+        subEn: "Arrange shuffled steps into the right chronological or logical order (Workflows, Processes, Timelines).",
+        subTh: "แตะเรียงลำดับขั้นตอน กระบวนการทดลอง หรือไทม์ไลน์จากขั้นที่ 1 ถึงขั้นสุดท้าย",
+        schemaEn: "Creator Template: steps[{ rank, label }]",
+        schemaTh: "เทมเพลตผู้สร้างคอร์ส: steps[{ rank, label }]"
+      }
+    ];
+
+    /* ==================== SUBJECT PACK DATA ==================== */
+    const PACKS = {
+      ai: {
+        matching: {
+          leftLabelEn: "Legal Terms", leftLabelTh: "คำศัพท์ / มาตรา",
+          rightLabelEn: "Definitions", rightLabelTh: "ความหมาย",
+          pairs: [
+            { id: "a", leftEn: "Article 4", leftTh: "มาตรา 4 (Article 4)", rightEn: "AI literacy for staff & deployers", rightTh: "ทักษะความเข้าใจ AI สำหรับบุคลากร" },
+            { id: "b", leftEn: "Provider", leftTh: "ผู้พัฒนา (Provider)", rightEn: "Builds & places AI on the market", rightTh: "พัฒนาและนำระบบ AI ออกสู่ตลาด" },
+            { id: "c", leftEn: "Deployer", leftTh: "ผู้ใช้งานเชิงองค์กร", rightEn: "Operates AI under its own authority", rightTh: "นำระบบ AI ไปใช้งานจริงในองค์กร" },
+            { id: "d", leftEn: "Deepfake Rule", leftTh: "กฎสื่อ Deepfake", rightEn: "Must label AI-generated media", rightTh: "ต้องติดป้ายแจ้งว่าเป็นสื่อสังเคราะห์" }
+          ]
+        },
+        stamp: {
+          leftBtnEn: "STAMP: ALLOW", leftBtnTh: "ประทับตรา: อนุญาต",
+          rightBtnEn: "STAMP: PROHIBITED", rightBtnTh: "ประทับตรา: ต้องห้าม",
+          leftStampEn: "ALLOWED", leftStampTh: "อนุญาต",
+          rightStampEn: "PROHIBITED", rightStampTh: "ต้องห้าม",
+          cases: [
+            { code: "CASE #201", titleEn: "Government Social Scoring", titleTh: "ระบบให้คะแนนพลเมืองโดยรัฐ", descEn: "Ranks citizens by social behavior to restrict public services.", descTh: "จัดอันดับพลเมืองจากพฤติกรรมเพื่อจำกัดสิทธิการใช้บริการรัฐ", answer: "right", whyEn: "Prohibited under Article 5 of the EU AI Act.", whyTh: "ต้องห้ามตามมาตรา 5 ของกฎหมาย EU AI Act" },
+            { code: "CASE #202", titleEn: "Email Spam Filter", titleTh: "AI กรองอีเมลสแปม", descEn: "Moves junk mail into Spam automatically without sensitive profiling.", descTh: "ช่วยแยกอีเมลขยะเข้าโฟลเดอร์สแปมโดยไม่เก็บข้อมูลอ่อนไหว", answer: "left", whyEn: "Allowed — Minimal-Risk productivity AI.", whyTh: "อนุญาต — เป็น AI ความเสี่ยงต่ำสุด" },
+            { code: "CASE #203", titleEn: "Office Emotion Camera", titleTh: "กล้องจับอารมณ์พนักงาน", descEn: "Tracks employee facial expressions all day to score mood.", descTh: "ตรวจจับสีหน้าพนักงานตลอดวันเพื่อวัดอารมณ์ในการทำงาน", answer: "right", whyEn: "Prohibited in workplaces except narrow medical/safety cases.", whyTh: "ต้องห้ามในที่ทำงาน ยกเว้นเหตุผลทางการแพทย์หรือความปลอดภัย" }
+          ]
+        },
+        sorting: {
+          buckets: [
+            { id: "b1", titleEn: "Unacceptable", titleTh: "ต้องห้าม", subEn: "Banned outright", subTh: "ห้ามใช้งาน", tone: "red" },
+            { id: "b2", titleEn: "High-Risk", titleTh: "ความเสี่ยงสูง", subEn: "Strict oversight", subTh: "ต้องมีคนกำกับ", tone: "amber" },
+            { id: "b3", titleEn: "Limited Risk", titleTh: "ความเสี่ยงจำกัด", subEn: "Needs disclosure", subTh: "ต้องแจ้งผู้ใช้", tone: "blue" },
+            { id: "b4", titleEn: "Minimal Risk", titleTh: "ความเสี่ยงต่ำ", subEn: "Freely allowed", subTh: "ใช้ได้ทั่วไป", tone: "green" }
+          ],
+          items: [
+            { nameEn: "Resume Screening AI", nameTh: "AI คัดกรองเรซูเม่", hintEn: "Ranks job applicants", hintTh: "คัดเลือกผู้สมัครงาน", bucket: "b2" },
+            { nameEn: "Social Scoring", nameTh: "ให้คะแนนพลเมือง", hintEn: "Punishes low social scores", hintTh: "ตัดสิทธิพลเมืองคะแนนต่ำ", bucket: "b1" },
+            { nameEn: "Support Chatbot", nameTh: "แชทบอทบริการลูกค้า", hintEn: "Must disclose AI identity", hintTh: "ต้องแจ้งว่าเป็น AI", bucket: "b3" },
+            { nameEn: "Game NPC AI", nameTh: "AI ศัตรูในเกม", hintEn: "Entertainment only", hintTh: "เพื่อความบันเทิง", bucket: "b4" }
+          ]
+        },
+        scenario: {
+          meterEn: "Compliance Meter", meterTh: "คะแนนความถูกต้องตามกฎหมาย",
+          steps: [
+            {
+              speaker: "NekoNova · Product Lead",
+              promptEn: "We want to ship an automated hiring AI on Friday with no human review. Is that okay?",
+              promptTh: "เราอยากปล่อย AI คัดผู้สมัครงานอัตโนมัติวันศุกร์นี้โดยไม่ต้องมีคนตรวจซ้ำ ได้ไหม?",
+              choices: [
+                { textEn: "No — hiring AI is High-Risk and requires human oversight & risk docs first.", textTh: "ไม่ได้ — AI คัดคนเข้าทำงานเป็นความเสี่ยงสูง ต้องมีคนกำกับและเอกสารก่อน", delta: +20, noteEn: "Correct! Annex III classifies recruitment AI as High-Risk.", noteTh: "ถูกต้อง! AI คัดเลือกบุคลากรอยู่ในกลุ่มความเสี่ยงสูง" },
+                { textEn: "Go ahead, just don't tell candidates AI was used.", textTh: "ปล่อยได้เลย แค่ไม่ต้องบอกผู้สมัครว่าใช้ AI", delta: -30, noteEn: "Violates both transparency and High-Risk oversight rules.", noteTh: "ผิดทั้งเรื่องความโปร่งใสและการกำกับดูแลโดยมนุษย์" }
+              ]
+            },
+            {
+              speaker: "NekoNova · Product Lead",
+              promptEn: "Should we also train HR staff on AI limitations before launch?",
+              promptTh: "เราควรอบรมทีม HR เรื่องข้อจำกัดของ AI ก่อนเปิดใช้งานด้วยไหม?",
+              choices: [
+                { textEn: "Yes — Article 4 requires AI literacy for staff using AI systems.", textTh: "ควร — มาตรา 4 กำหนดให้บุคลากรที่ใช้งาน AI ต้องมีทักษะ AI Literacy", delta: +10, noteEn: "Spot on! Trained staff catch bias early.", noteTh: "เยี่ยมมาก! ทีมที่ผ่านการอบรมจะช่วยจับอคติของระบบได้" },
+                { textEn: "No need — only developers need to understand it.", textTh: "ไม่ต้อง ให้แค่นักพัฒนารู้ก็พอ", delta: -20, noteEn: "AI literacy applies to deployers' staff too.", noteTh: "AI Literacy ครอบคลุมบุคลากรฝั่งองค์กรผู้ใช้งานด้วย" }
+              ]
+            }
+          ]
+        },
+        sprint: [
+          { qEn: "The EU AI Act can apply to non-EU companies if AI outputs are used in the EU.", qTh: "EU AI Act บังคับใช้กับบริษัทนอก EU ได้หากผลลัพธ์ AI ถูกใช้ใน EU", ans: true },
+          { qEn: "All chatbots are completely banned under the EU AI Act.", qTh: "แชทบอททุกชนิดถูกห้ามใช้งานทั้งหมดภายใต้ EU AI Act", ans: false },
+          { qEn: "Purely personal, non-professional AI use is generally excluded.", qTh: "การใช้ AI ส่วนตัวที่ไม่เกี่ยวกับวิชาชีพโดยทั่วไปได้รับข้อยกเว้น", ans: true }
+        ],
+        inspector: {
+          barTitle: "SmartHire AI v2.0 — Pre-Launch Compliance Spec",
+          goalEn: "Tap the 3 legal violations", goalTh: "คลิกจับผิด 3 จุดละเมิดกฎหมาย",
+          spots: [
+            { id: "s1", titleEn: "Emotion Tracker", titleTh: "กล้องจับอารมณ์", descEn: "Reads employee emotions silently during meetings.", descTh: "วิเคราะห์สีหน้าพนักงานในห้องประชุมโดยอัตโนมัติ", isTarget: true },
+            { id: "s2", titleEn: "AES-256 Encryption", titleTh: "การเข้ารหัส AES-256", descEn: "Protects audit logs at rest and in transit.", descTh: "เข้ารหัสบันทึกการใช้งานเพื่อความปลอดภัย", isTarget: false },
+            { id: "s3", titleEn: "Hidden AI Chatbot", titleTh: "แชทบอทไม่เปิดเผยตัวตน", descEn: "Pretends to be a human HR rep with no label.", descTh: "สวมรอยเป็นเจ้าหน้าที่บุคคลโดยไม่แจ้งว่าเป็น AI", isTarget: true },
+            { id: "s4", titleEn: "No Human Override", titleTh: "ปิดปุ่มมนุษย์แก้ไขผล", descEn: "Auto-rejects applicants with zero human review.", descTh: "ปฏิเสธผู้สมัครอัตโนมัติโดยพนักงานแทรกแซงไม่ได้", isTarget: true }
+          ]
+        },
+        order: [
+          { rank: 1, en: "Classify AI Risk Tier", th: "ประเมินและจัดระดับความเสี่ยง AI" },
+          { rank: 2, en: "Prepare Technical Docs & Data Quality", th: "จัดทำเอกสารเทคนิคและตรวจคุณภาพข้อมูล" },
+          { rank: 3, en: "Set Up Human Oversight Controls", th: "วางระบบให้มนุษย์กำกับดูแลได้" },
+          { rank: 4, en: "Complete Conformity Check & Launch", th: "ตรวจความสอดคล้องและเปิดใช้งานจริง" }
+        ]
+      },
+
+      science: {
+        matching: {
+          leftLabelEn: "Cell Organelles", leftLabelTh: "ออร์แกเนลล์ของเซลล์",
+          rightLabelEn: "Primary Function", rightLabelTh: "หน้าที่หลัก",
+          pairs: [
+            { id: "a", leftEn: "Mitochondria", leftTh: "ไมโทคอนเดรีย", rightEn: "Generates ATP energy for the cell", rightTh: "สร้างพลังงาน ATP ให้กับเซลล์" },
+            { id: "b", leftEn: "Ribosome", leftTh: "ไรโบโซม", rightEn: "Synthesizes proteins from mRNA", rightTh: "สังเคราะห์โปรตีนตามรหัสพันธุกรรม" },
+            { id: "c", leftEn: "Chloroplast", leftTh: "คลอโรพลาสต์", rightEn: "Converts sunlight into glucose (plants)", rightTh: "สังเคราะห์ด้วยแสงสร้างน้ำตาลในพืช" },
+            { id: "d", leftEn: "Nucleus", leftTh: "นิวเคลียส", rightEn: "Stores DNA & directs cell activities", rightTh: "เก็บสารพันธุกรรม DNA และควบคุมเซลล์" }
+          ]
+        },
+        stamp: {
+          leftBtnEn: "STAMP: RENEWABLE", leftBtnTh: "ประทับตรา: หมุนเวียน",
+          rightBtnEn: "STAMP: NON-RENEWABLE", rightBtnTh: "ประทับตรา: ใช้แล้วหมดไป",
+          leftStampEn: "RENEWABLE", leftStampTh: "พลังงานหมุนเวียน",
+          rightStampEn: "NON-RENEWABLE", rightStampTh: "ใช้แล้วหมดไป",
+          cases: [
+            { code: "SAMPLE #101", titleEn: "Offshore Wind Turbine", titleTh: "กังหันลมนอกชายฝั่ง", descEn: "Converts moving air currents into electricity without depleting fuel.", descTh: "เปลี่ยนพลังงานจลน์ของกระแสลมเป็นไฟฟ้าโดยไม่หมดไป", answer: "left", whyEn: "Renewable — wind is naturally replenished.", whyTh: "พลังงานหมุนเวียน เพราะกระแสลมเกิดใหม่ได้ตามธรรมชาติ" },
+            { code: "SAMPLE #102", titleEn: "Coal Thermal Power", titleTh: "โรงไฟฟ้าถ่านหิน", descEn: "Burns fossilized carbon formed over millions of years underground.", descTh: "เผาไหม้เชื้อเพลิงฟอสซิลที่ทับถมใต้ดินมานานหลายล้านปี", answer: "right", whyEn: "Non-renewable — fossil fuels take millions of years to form.", whyTh: "ใช้แล้วหมดไป เพราะเชื้อเพลิงฟอสซิลสร้างทดแทนไม่ทัน" },
+            { code: "SAMPLE #103", titleEn: "Solar Photovoltaic Panel", titleTh: "แผงโซลาร์เซลล์", descEn: "Captures sunlight photons directly to generate clean power.", descTh: "รับแสงอาทิตย์โดยตรงเพื่อแปลงเป็นพลังงานไฟฟ้าสะอาด", answer: "left", whyEn: "Renewable — sunlight is abundant and sustainable.", whyTh: "พลังงานหมุนเวียนจากแสงอาทิตย์" }
+          ]
+        },
+        sorting: {
+          buckets: [
+            { id: "b1", titleEn: "Solid", titleTh: "ของแข็ง", subEn: "Fixed shape & volume", subTh: "รูปร่างและปริมาตรคงที่", tone: "red" },
+            { id: "b2", titleEn: "Liquid", titleTh: "ของเหลว", subEn: "Flows, fixed volume", subTh: "ไหลได้ ปริมาตรคงที่", tone: "blue" },
+            { id: "b3", titleEn: "Gas", titleTh: "แก๊ส", subEn: "Expands to fill space", subTh: "ฟุ้งกระจายเต็มภาชนะ", tone: "green" },
+            { id: "b4", titleEn: "Plasma", titleTh: "พลาสมา", subEn: "Ionized superheated gas", subTh: "แก๊สแตกตัวเป็นไอออน", tone: "amber" }
+          ],
+          items: [
+            { nameEn: "Lightning Bolt", nameTh: "สายฟ้าแลบ", hintEn: "Superheated ionized air", hintTh: "อากาศแตกตัวเป็นไอออนความร้อนสูง", bucket: "b4" },
+            { nameEn: "Ice Crystal", nameTh: "ผลึกน้ำแข็ง", hintEn: "Rigid lattice structure", hintTh: "โมเลกุลเรียงตัวแน่นคงรูป", bucket: "b1" },
+            { nameEn: "Oxygen (O2)", nameTh: "แก๊สออกซิเจน", hintEn: "Invisible air we breathe", hintTh: "ฟุ้งกระจายในบรรยากาศ", bucket: "b3" },
+            { nameEn: "Mercury at 25°C", nameTh: "ปรอทที่อุณหภูมิห้อง", hintEn: "Flows inside a glass tube", hintTh: "ไหลตามรูปทรงภาชนะ", bucket: "b2" }
+          ]
+        },
+        scenario: {
+          meterEn: "Lab Safety Meter", meterTh: "คะแนนความปลอดภัยห้องแล็บ",
+          steps: [
+            {
+              speaker: "Lab Partner · MintWhisker",
+              promptEn: "We need to dilute concentrated acid with water. Should we pour water into the acid bottle?",
+              promptTh: "เราต้องเจือจางกรดเข้มข้นด้วยน้ำ เทน้ำลงไปในขวดกรดเลยดีไหม?",
+              choices: [
+                { textEn: "No! Always add acid slowly into water to avoid violent splashing.", textTh: "ห้ามเด็ดขาด! ต้องค่อย ๆ เทกรดลงในน้ำเพื่อป้องกันการกระเด็นจากความร้อน", delta: +20, noteEn: "Safe lab rule: 'Do as you oughta — add acid to water!'", noteTh: "ถูกต้อง! การเทกรดลงน้ำช่วยกระจายความร้อนอย่างปลอดภัย" },
+                { textEn: "Yes, pouring water into acid is faster.", textTh: "ได้เลย เทน้ำลงกรดเร็วกว่า", delta: -30, noteEn: "Dangerous! Exothermic heat can boil and splash concentrated acid.", noteTh: "อันตรายมาก! ความร้อนสูงอาจทำให้กรดเดือดและกระเด็นใส่ได้" }
+              ]
+            },
+            {
+              speaker: "Lab Partner · MintWhisker",
+              promptEn: "One beaker has an unlabeled clear liquid. Should we smell it closely to guess what it is?",
+              promptTh: "มีบีกเกอร์น้ำใสที่ไม่มีป้ายชื่อ ลองก้มดมใกล้ ๆ เพื่อเดาดูไหม?",
+              choices: [
+                { textEn: "Never inhale directly — report unlabeled chemicals to the instructor.", textTh: "ห้ามดมโดยตรง แจ้งผู้ดูแลแล็บและจัดการตามขั้นตอนความปลอดภัย", delta: +10, noteEn: "Smart! Unlabeled vapors can be toxic or corrosive.", noteTh: "ยอดเยี่ยม! สารระเหยที่ไม่ทราบชนิดอาจเป็นพิษได้" },
+                { textEn: "Take a quick sniff directly over the rim.", textTh: "ลองสูดกลิ่นเหนือปากบีกเกอร์ดูนิดเดียว", delta: -25, noteEn: "Unsafe — never directly inhale unknown lab chemicals.", noteTh: "ไม่ปลอดภัย ห้ามสูดดมสารเคมีที่ไม่ทราบชนิดโดยตรง" }
+              ]
+            }
+          ]
+        },
+        sprint: [
+          { qEn: "Plants release oxygen as a byproduct of photosynthesis.", qTh: "พืชปล่อยแก๊สออกซิเจนออกมาเป็นผลพลอยได้จากการสังเคราะห์ด้วยแสง", ans: true },
+          { qEn: "Sound waves travel faster in a vacuum than in water.", qTh: "คลื่นเสียงเดินทางในสุญญากาศได้เร็วกว่าในน้ำ", ans: false },
+          { qEn: "Human red blood cells carry oxygen using hemoglobin.", qTh: "เม็ดเลือดแดงของมนุษย์ลำเลียงออกซิเจนโดยใช้ฮีโมโกลบิน", ans: true }
+        ],
+        inspector: {
+          barTitle: "Chemistry Lab Bench — Safety Inspection",
+          goalEn: "Tap the 3 lab safety hazards", goalTh: "คลิกจับผิด 3 จุดอันตรายในห้องแล็บ",
+          spots: [
+            { id: "s1", titleEn: "No Safety Goggles", titleTh: "ไม่สวมแว่นตานิรภัย", descEn: "Student heating solution with unprotected eyes.", descTh: "ต้มสารละลายโดยไม่ได้สวมแว่นตาป้องกันสารเคมี", isTarget: true },
+            { id: "s2", titleEn: "Labeled Waste Beaker", titleTh: "ขวดทิ้งสารเคมีติดฉลากชัด", descEn: "Clearly marked hazardous waste container.", descTh: "แยกภาชนะทิ้งของเสียพร้อมป้ายชื่อชัดเจน", isTarget: false },
+            { id: "s3", titleEn: "Open Soda on Bench", titleTh: "วางเครื่องดื่มบนโต๊ะทดลอง", descEn: "Drinking cup sitting right next to reagent bottles.", descTh: "วางแก้วน้ำดื่มใกล้ขวดสารเคมีบนโต๊ะแล็บ", isTarget: true },
+            { id: "s4", titleEn: "Loose Sleeves Near Flame", titleTh: "แขนเสื้อรุ่มร่ามใกล้เปลวไฟ", descEn: "Long dangling sleeves hovering over a lit Bunsen burner.", descTh: "แขนเสื้อยาวห้อยใกล้ตะเกียงบุนเสนที่จุดไฟอยู่", isTarget: true }
+          ]
+        },
+        order: [
+          { rank: 1, en: "Observe & Ask a Question", th: "สังเกตและตั้งคำถามวิจัย" },
+          { rank: 2, en: "Form a Testable Hypothesis", th: "ตั้งสมมติฐานที่ทดสอบได้" },
+          { rank: 3, en: "Run a Controlled Experiment", th: "ทำการทดลองและเก็บข้อมูล" },
+          { rank: 4, en: "Analyze Data & Draw Conclusions", th: "วิเคราะห์ผลและสรุปข้อค้นพบ" }
+        ]
+      },
+
+      coding: {
+        matching: {
+          leftLabelEn: "Web Technologies", leftLabelTh: "เทคโนโลยีเว็บ",
+          rightLabelEn: "Core Role", rightLabelTh: "หน้าที่หลัก",
+          pairs: [
+            { id: "a", leftEn: "HTML", leftTh: "HTML", rightEn: "Defines page structure & semantic content", rightTh: "กำหนดโครงสร้างและเนื้อหาหลักของหน้าเว็บ" },
+            { id: "b", leftEn: "CSS", leftTh: "CSS", rightEn: "Controls visual layout, colors & responsiveness", rightTh: "ควบคุมสีสัน เลย์เอาต์ และการแสดงผลแต่ละหน้าจอ" },
+            { id: "c", leftEn: "TypeScript", leftTh: "TypeScript", rightEn: "Adds static type safety to JavaScript logic", rightTh: "เพิ่มระบบตรวจสอบชนิดข้อมูลให้ JavaScript" },
+            { id: "d", leftEn: "SQL", leftTh: "SQL", rightEn: "Queries & updates structured database tables", rightTh: "สืบค้นและจัดการข้อมูลในฐานข้อมูลเชิงสัมพันธ์" }
+          ]
+        },
+        stamp: {
+          leftBtnEn: "STAMP: CLEAN CODE", leftBtnTh: "ประทับตรา: โค้ดปลอดภัย",
+          rightBtnEn: "STAMP: SECURITY BUG", rightBtnTh: "ประทับตรา: มีช่องโหว่",
+          leftStampEn: "CLEAN CODE", leftStampTh: "โค้ดปลอดภัย",
+          rightStampEn: "BUG FOUND", rightStampTh: "พบช่องโหว่",
+          cases: [
+            { code: "PR #401", titleEn: "Parameterized SQL Query", titleTh: "ใช้ Parameterized Query ใน SQL", descEn: "db.prepare('SELECT * FROM users WHERE id = ?').get(userId)", descTh: "ส่งค่าพารามิเตอร์แยกจากคำสั่ง SQL เพื่อป้องกัน SQL Injection", answer: "left", whyEn: "Clean & safe — prevents SQL injection attacks.", whyTh: "ปลอดภัย เพราะป้องกันการแทรกคำสั่ง SQL Injection ได้" },
+            { code: "PR #402", titleEn: "Hardcoded API Secret in Client JS", titleTh: "ฝังรหัสลับ API ไว้ในไฟล์ฝั่งหน้าเว็บ", descEn: "const SECRET_ADMIN_KEY = 'sk_live_99999' inside public browser JS.", descTh: "เขียนคีย์ลับระดับแอดมินลงใน JavaScript ที่ส่งไปยังเบราว์เซอร์ผู้ใช้", answer: "right", whyEn: "Critical bug — anyone can inspect client JS and steal the key.", whyTh: "ช่องโหว่ร้ายแรง เพราะใครก็เปิดดูโค้ดหน้าเว็บแล้วขโมยคีย์ได้" },
+            { code: "PR #403", titleEn: "textContent for User Input", titleTh: "ใช้ textContent แสดงข้อความผู้ใช้", descEn: "commentEl.textContent = userMessage; // escapes HTML automatically", descTh: "ใช้ textContent แทน innerHTML เพื่อป้องกันโค้ดสคริปต์แฝง", answer: "left", whyEn: "Safe — neutralizes XSS script injection.", whyTh: "ปลอดภัย ช่วยป้องกันช่องโหว่ XSS ได้ดี" }
+          ]
+        },
+        sorting: {
+          buckets: [
+            { id: "b1", titleEn: "Frontend", titleTh: "Frontend", subEn: "Runs in browser UI", subTh: "แสดงผลบนเบราว์เซอร์", tone: "blue" },
+            { id: "b2", titleEn: "Backend", titleTh: "Backend", subEn: "Server & API logic", subTh: "ประมวลผลฝั่งเซิร์ฟเวอร์", tone: "green" },
+            { id: "b3", titleEn: "Database", titleTh: "Database", subEn: "Persistent storage", subTh: "จัดเก็บข้อมูลถาวร", tone: "amber" },
+            { id: "b4", titleEn: "Security", titleTh: "Security", subEn: "Auth & protection", subTh: "ความปลอดภัยและยืนยันตัวตน", tone: "red" }
+          ],
+          items: [
+            { nameEn: "CSS Grid Layout", nameTh: "เลย์เอาต์ CSS Grid", hintEn: "Styles page columns", hintTh: "จัดคอลัมน์บนหน้าเว็บ", bucket: "b1" },
+            { nameEn: "SQLite Users Table", nameTh: "ตารางผู้ใช้ SQLite", hintEn: "Stores account rows", hintTh: "เก็บข้อมูลบัญชีผู้ใช้", bucket: "b3" },
+            { nameEn: "Password Hashing (scrypt)", nameTh: "เข้ารหัสรหัสผ่าน scrypt", hintEn: "Protects credentials", hintTh: "ป้องกันรหัสผ่านรั่วไหล", bucket: "b4" },
+            { nameEn: "REST API Router", nameTh: "ตัวจัดการเส้นทาง REST API", hintEn: "Handles POST /api/login", hintTh: "รับส่งคำขอจากไคลเอนต์", bucket: "b2" }
+          ]
+        },
+        scenario: {
+          meterEn: "System Health Meter", meterTh: "คะแนนความเสถียรของระบบ",
+          steps: [
+            {
+              speaker: "KittyCipher · Dev Lead",
+              promptEn: "Production API response times just spiked 10x after deploying a new leaderboard query. First move?",
+              promptTh: "หลังอัปเดตหน้าตารางอันดับ API ช้าลง 10 เท่าทันที ควรเริ่มแก้จากจุดไหนก่อน?",
+              choices: [
+                { textEn: "Check slow-query logs and add an index on (stage, score) instead of guessing.", textTh: "ตรวจ Log คำสั่งที่ช้าและเพิ่ม Index บนคอลัมน์ที่ค้นหาแทนการเดาสุ่ม", delta: +20, noteEn: "Data-first debugging fixes root causes quickly.", noteTh: "เยี่ยม! การดูข้อมูลจริงช่วยให้แก้ปัญหาได้ตรงจุด" },
+                { textEn: "Delete half the database records to make it smaller.", textTh: "ลบข้อมูลในฐานข้อมูลทิ้งครึ่งหนึ่งเพื่อให้เล็กลง", delta: -35, noteEn: "Never delete production user data to mask a query bottleneck!", noteTh: "ห้ามลบข้อมูลผู้ใช้จริงเพื่อกลบปัญหา Query ช้าเด็ดขาด" }
+              ]
+            },
+            {
+              speaker: "KittyCipher · Dev Lead",
+              promptEn: "Fixed the index! Should we add an automated test before merging?",
+              promptTh: "เพิ่ม Index แล้วเร็วขึ้นทันที! ควรเขียนเทสต์อัตโนมัติเพิ่มก่อน Merge ไหม?",
+              choices: [
+                { textEn: "Yes — add a regression test so future edits don't break ranking order.", textTh: "ควร — เพิ่ม Regression Test เพื่อกันบั๊กกลับมาอีกในอนาคต", delta: +10, noteEn: "Great engineering habit!", noteTh: "ยอดเยี่ยม! ช่วยให้โค้ดมั่นใจได้ระยะยาว" },
+                { textEn: "Skip tests — it worked once on my laptop.", textTh: "ไม่ต้องเทสต์ รันผ่านบนเครื่องฉันครั้งเดียวก็พอแล้ว", delta: -15, noteEn: "Untested changes often regress silently.", noteTh: "โค้ดที่ไม่มีเทสต์เสี่ยงพังซ้ำเมื่อมีการแก้ไขภายหลัง" }
+              ]
+            }
+          ]
+        },
+        sprint: [
+          { qEn: "const in JavaScript prevents reassigning the variable reference.", qTh: "คำสั่ง const ใน JavaScript ป้องกันการกำหนดค่าอ้างอิงใหม่ให้ตัวแปร", ans: true },
+          { qEn: "HTTP status code 404 means the request succeeded.", qTh: "รหัสสถานะ HTTP 404 หมายถึงคำขอทำงานสำเร็จสมบูรณ์", ans: false },
+          { qEn: "Git branches let you build features safely without breaking main.", qTh: "Git Branch ช่วยให้พัฒนาฟีเจอร์ใหม่ได้อย่างปลอดภัยโดยไม่กระทบโค้ดหลัก", ans: true }
+        ],
+        inspector: {
+          barTitle: "Pull Request #88 — Login Handler Code Review",
+          goalEn: "Tap the 3 bugs / risks in this PR", goalTh: "คลิกจับบั๊ก 3 จุดในโค้ดนี้",
+          spots: [
+            { id: "s1", titleEn: "Plaintext Password Save", titleTh: "บันทึกรหัสผ่านแบบข้อความปกติ", descEn: "INSERT INTO users(password) VALUES(req.body.password) without hashing.", descTh: "เก็บรหัสผ่านผู้ใช้ลงฐานข้อมูลโดยไม่ผ่านการแฮช", isTarget: true },
+            { id: "s2", titleEn: "HttpOnly Session Cookie", titleTh: "ตั้งค่าคุกกี้แบบ HttpOnly", descEn: "Prevents client-side JavaScript from reading session tokens.", descTh: "ป้องกันสคริปต์ฝั่งหน้าเว็บขโมยโทเค็นเซสชัน", isTarget: false },
+            { id: "s3", titleEn: "Unescaped innerHTML", titleTh: "นำชื่อผู้ใช้ใส่ innerHTML ตรง ๆ", descEn: "welcomeEl.innerHTML = 'Hi ' + userInput; // XSS risk!", descTh: "แสดงข้อความจากผู้ใช้ด้วย innerHTML โดยไม่กรองโค้ด", isTarget: true },
+            { id: "s4", titleEn: "Missing await on DB Save", titleTh: "ลืมใส่ await ตอนบันทึกฐานข้อมูล", descEn: "Responds 200 OK before checking if the write actually succeeded.", descTh: "ส่งคำตอบสำเร็จกลับก่อนตรวจสอบว่าการบันทึกเสร็จสมบูรณ์", isTarget: true }
+          ]
+        },
+        order: [
+          { rank: 1, en: "Create a Feature Branch", th: "สร้าง Branch ใหม่สำหรับฟีเจอร์" },
+          { rank: 2, en: "Implement Code & Run Type Check", th: "เขียนโค้ดและรันตรวจ Type / Lint" },
+          { rank: 3, en: "Run Automated Tests & Code Review", th: "รันเทสต์อัตโนมัติและตรวจโค้ด (Review)" },
+          { rank: 4, en: "Merge & Deploy to Production", th: "รวมโค้ดและปล่อยขึ้นเซิร์ฟเวอร์จริง" }
+        ]
+      },
+
+      english: {
+        matching: {
+          leftLabelEn: "Vocabulary", leftLabelTh: "คำศัพท์ภาษาอังกฤษ",
+          rightLabelEn: "Closest Meaning", rightLabelTh: "ความหมายที่ใกล้เคียงที่สุด",
+          pairs: [
+            { id: "a", leftEn: "Concise", leftTh: "Concise", rightEn: "Clear and brief with no wasted words", rightTh: "กระชับ ชัดเจน ไม่เยิ่นเย้อ" },
+            { id: "b", leftEn: "Reliable", leftTh: "Reliable", rightEn: "Consistently trustworthy and dependable", rightTh: "เชื่อถือได้ พึ่งพาได้อย่างสม่ำเสมอ" },
+            { id: "c", leftEn: "Collaborate", leftTh: "Collaborate", rightEn: "Work together toward a shared goal", rightTh: "ทำงานร่วมกันเพื่อเป้าหมายเดียวกัน" },
+            { id: "d", leftEn: "Clarify", leftTh: "Clarify", rightEn: "Make an unclear point easier to understand", rightTh: "อธิบายให้ชัดเจนและเข้าใจง่ายขึ้น" }
+          ]
+        },
+        stamp: {
+          leftBtnEn: "STAMP: CORRECT", leftBtnTh: "ประทับตรา: ถูกไวยากรณ์",
+          rightBtnEn: "STAMP: NEEDS FIX", rightBtnTh: "ประทับตรา: ต้องแก้ไข",
+          leftStampEn: "CORRECT", leftStampTh: "ถูกต้อง",
+          rightStampEn: "NEEDS FIX", rightStampTh: "ต้องแก้",
+          cases: [
+            { code: "LINE #01", titleEn: "She has been studying since 2024.", titleTh: "She has been studying since 2024.", descEn: "Uses Present Perfect Continuous with 'since' + starting year.", descTh: "ใช้ Present Perfect Continuous คู่กับ since และปีเริ่มต้น", answer: "left", whyEn: "Correct! 'Since' pairs with a specific point in time.", whyTh: "ถูกต้อง! since ใช้คู่กับจุดเริ่มต้นของเวลา" },
+            { code: "LINE #02", titleEn: "He don't likes coffee in the morning.", titleTh: "He don't likes coffee in the morning.", descEn: "Subject-verb agreement check for third-person singular.", descTh: "ตรวจสอบการผันกริยาสำหรับประธานเอกพจน์บุรุษที่ 3", answer: "right", whyEn: "Needs fix -> 'He doesn't like coffee in the morning.'", whyTh: "ต้องแก้เป็น 'He doesn't like coffee in the morning.'" },
+            { code: "LINE #03", titleEn: "If it rains tomorrow, we will stay inside.", titleTh: "If it rains tomorrow, we will stay inside.", descEn: "First Conditional sentence for a real future possibility.", descTh: "ประโยคเงื่อนไขแบบที่ 1 สำหรับเหตุการณ์ที่เป็นไปได้ในอนาคต", answer: "left", whyEn: "Correct First Conditional structure (If + Present, will + V1).", whyTh: "ถูกต้องตามโครงสร้าง First Conditional" }
+          ]
+        },
+        sorting: {
+          buckets: [
+            { id: "b1", titleEn: "Noun", titleTh: "คำนาม (Noun)", subEn: "Person, place, thing", subTh: "คน สัตว์ สิ่งของ", tone: "blue" },
+            { id: "b2", titleEn: "Verb", titleTh: "คำกริยา (Verb)", subEn: "Action or state", subTh: "การกระทำหรือสถานะ", tone: "green" },
+            { id: "b3", titleEn: "Adjective", titleTh: "คำคุณศัพท์ (Adj.)", subEn: "Describes a noun", subTh: "ขยายคำนาม", tone: "amber" },
+            { id: "b4", titleEn: "Adverb", titleTh: "คำกริยาวิเศษณ์ (Adv.)", subEn: "Modifies a verb/adj", subTh: "ขยายกริยา/คุณศัพท์", tone: "red" }
+          ],
+          items: [
+            { nameEn: "Quickly", nameTh: "Quickly", hintEn: "She solved the puzzle quickly.", hintTh: "ขยายคำกริยา solved", bucket: "b4" },
+            { nameEn: "Library", nameTh: "Library", hintEn: "A quiet place to read books.", hintTh: "สถานที่อ่านหนังสือ", bucket: "b1" },
+            { nameEn: "Brilliant", nameTh: "Brilliant", hintEn: "That is a brilliant idea!", hintTh: "ขยายคำนาม idea", bucket: "b3" },
+            { nameEn: "Explore", nameTh: "Explore", hintEn: "Let's explore new lessons.", hintTh: "แสดงการกระทำ", bucket: "b2" }
+          ]
+        },
+        scenario: {
+          meterEn: "Professional Tone Meter", meterTh: "คะแนนความสุภาพและมืออาชีพ",
+          steps: [
+            {
+              speaker: "Client · International Partner",
+              promptEn: "You need 2 extra days to finish a report. How should you reply to your client's email?",
+              promptTh: "คุณต้องขอเลื่อนส่งรายงานออกไปอีก 2 วัน ควรตอบอีเมลลูกค้าอย่างไรให้ดูมืออาชีพ?",
+              choices: [
+                { textEn: "Thank you for your patience. Could we share the finalized report by Thursday so every figure is verified?", textTh: "ขอบคุณสำหรับความเข้าใจครับ ขอส่งฉบับสมบูรณ์วันพฤหัสบดีเพื่อให้ตรวจสอบตัวเลขครบถ้วนนะครับ", delta: +20, noteEn: "Polite, proactive, and gives a clear new deadline!", noteTh: "สุภาพ ชัดเจน และระบุกำหนดส่งใหม่ได้อย่างมืออาชีพ" },
+                { textEn: "Too busy right now. I'll send it whenever I finish.", textTh: "ยุ่งมากตอนนี้ เสร็จเมื่อไหร่เดี๋ยวส่งไปให้เอง", delta: -30, noteEn: "Too abrupt and lacks a reliable timeline.", noteTh: "ห้วนเกินไปและไม่ระบุเวลาที่ชัดเจน" }
+              ]
+            },
+            {
+              speaker: "Client · International Partner",
+              promptEn: "The client asks a question you aren't 100% sure about during a meeting. Best phrasing?",
+              promptTh: "ระหว่างประชุมลูกค้าถามคำถามที่คุณยังไม่แน่ใจ 100% ควรพูดอย่างไร?",
+              choices: [
+                { textEn: "Great question — let me double-check that detail and follow up right after our call.", textTh: "เป็นคำถามที่ดีมากครับ ขอตรวจสอบรายละเอียดอีกครั้งแล้วส่งคำตอบตามไปทันทีหลังจบประชุมนะครับ", delta: +10, noteEn: "Builds trust and keeps communication accurate.", noteTh: "สร้างความน่าเชื่อถือและได้ข้อมูลที่ถูกต้องแน่นอน" },
+                { textEn: "I have no idea, ask someone else.", textTh: "ไม่รู้เหมือนกัน ไปถามคนอื่นเอาเองนะ", delta: -25, noteEn: "Sounds dismissive in a workplace setting.", noteTh: "ฟังดูปัดความรับผิดชอบ ไม่เหมาะกับการสื่อสารในงาน" }
+              ]
+            }
+          ]
+        },
+        sprint: [
+          { qEn: "'Their', 'There', and 'They're' all have the exact same meaning.", qTh: "คำว่า Their, There และ They're มีความหมายเหมือนกันทั้งหมด", ans: false },
+          { qEn: "'An' is used before vowel sounds, such as 'an hour' and 'an umbrella'.", qTh: "ใช้ 'an' นำหน้าเสียงสระ เช่น an hour และ an umbrella", ans: true },
+          { qEn: "The past tense of 'teach' is 'taught'.", qTh: "รูปอดีต (Past Tense) ของคำว่า teach คือ taught", ans: true }
+        ],
+        inspector: {
+          barTitle: "Draft Email — Proofreading Check",
+          goalEn: "Tap the 3 grammar / tone mistakes", goalTh: "คลิกจับผิด 3 จุดภาษาและการใช้คำ",
+          spots: [
+            { id: "s1", titleEn: "\"I look forward to hear...\"", titleTh: "\"I look forward to hear...\"", descEn: "Should be 'look forward to hearing' (gerund after 'to').", descTh: "หลัง look forward to ต้องตามด้วย V-ing (hearing)", isTarget: true },
+            { id: "s2", titleEn: "\"Dear Ms. Tanaka,\"", titleTh: "\"Dear Ms. Tanaka,\"", descEn: "Polite and standard formal email greeting.", descTh: "คำทักทายอีเมลทางการที่สุภาพและถูกต้อง", isTarget: false },
+            { id: "s3", titleEn: "\"Please find attach file\"", titleTh: "\"Please find attach file\"", descEn: "Missing past participle — should be 'attached file'.", descTh: "ควรใช้คำคุณศัพท์ 'attached file'", isTarget: true },
+            { id: "s4", titleEn: "\"SEND THIS ASAP!!!\"", titleTh: "\"SEND THIS ASAP!!!\"", descEn: "All-caps with triple exclamation feels aggressive.", descTh: "พิมพ์ตัวใหญ่ทั้งหมดและใส่เครื่องหมายตกใจซ้ำดูไม่สุภาพ", isTarget: true }
+          ]
+        },
+        order: [
+          { rank: 1, en: "Write a Clear Subject & Greeting", th: "ตั้งหัวเรื่องให้ชัดและทักทายสุภาพ" },
+          { rank: 2, en: "State Your Main Purpose First", th: "แจ้งจุดประสงค์หลักตั้งแต่ย่อหน้าแรก" },
+          { rank: 3, en: "Add Key Details & Next Action", th: "ให้รายละเอียดสำคัญและสิ่งที่ต้องการให้ดำเนินการ" },
+          { rank: 4, en: "Close Politely & Proofread", th: "ลงท้ายอย่างสุภาพและตรวจทานก่อนส่ง" }
+        ]
+      }
+    };
+
+    const tabsEl = document.getElementById("game-tabs");
+    const subjectChipsEl = document.getElementById("subject-chips");
+    const bodyEl = document.getElementById("stage-body");
+    const badgeEl = document.getElementById("stage-badge");
+    const titleEl = document.getElementById("stage-title");
+    const subEl = document.getElementById("stage-sub");
+    const scoreEl = document.getElementById("stage-score");
+    const schemaFootEl = document.getElementById("schema-foot");
+
+    const setScore = (text) => { scoreEl.textContent = text; };
+    const pack = () => PACKS[activeSubject];
+
+    /* ==================== STATES ==================== */
+    let matchState, stampState, sortState, scenState, sprintState, inspState, orderState;
+
+    const resetAllStates = () => {
+      matchState = null; stampState = null; sortState = null;
+      scenState = null; sprintState = null; inspState = null; orderState = null;
+    };
+
+    /* 1. PAIR MATCH */
+    const initMatching = () => {
+      const data = pack().matching;
+      matchState = {
+        data,
+        rightOrder: [data.pairs[2], data.pairs[0], data.pairs[3], data.pairs[1]],
+        selectedLeft: null,
+        matched: new Set(),
+        wrongPair: null,
+        mistakes: 0
+      };
+    };
+    const renderMatching = () => {
+      if (!matchState) initMatching();
+      const s = matchState;
+      setScore(t(`Matched: ${s.matched.size}/4`, `จับคู่แล้ว: ${s.matched.size}/4`));
+      const done = s.matched.size === 4;
+      bodyEl.innerHTML = `
+        <div class="match-grid">
+          <div class="match-col">
+            <div class="match-col__label">${t(s.data.leftLabelEn, s.data.leftLabelTh)}</div>
+            ${s.data.pairs.map((p) => `
+              <button class="match-item${s.selectedLeft === p.id ? " is-selected" : ""}${s.matched.has(p.id) ? " is-matched" : ""}${s.wrongPair && s.wrongPair[0] === p.id ? " is-wrong" : ""}" data-left="${p.id}" ${s.matched.has(p.id) ? "disabled" : ""}>
+                <span>${t(p.leftEn, p.leftTh)}</span>
+                ${s.matched.has(p.id) ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>` : ""}
+              </button>
+            `).join("")}
+          </div>
+          <div class="match-col">
+            <div class="match-col__label">${t(s.data.rightLabelEn, s.data.rightLabelTh)}</div>
+            ${s.rightOrder.map((p) => `
+              <button class="match-item${s.matched.has(p.id) ? " is-matched" : ""}${s.wrongPair && s.wrongPair[1] === p.id ? " is-wrong" : ""}" data-right="${p.id}" ${s.matched.has(p.id) ? "disabled" : ""}>
+                <span>${t(p.rightEn, p.rightTh)}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+        <div class="feedback-bar${done ? " is-win" : s.wrongPair ? " is-error" : ""}">
+          <span>${done ? t(`All 4 pairs matched cleanly! (${s.mistakes} mistakes)`, `จับคู่ครบทั้ง 4 คู่เรียบร้อย! (ผิดพลาด ${s.mistakes} ครั้ง)`) : s.wrongPair ? t("Not a match — try pairing another card.", "ยังไม่ตรงกัน ลองจับคู่อันอื่นดูนะ") : s.selectedLeft ? t("Now pick the matching item on the right.", "เลือกคำตอบที่ตรงกันทางฝั่งขวาได้เลย") : t("Tap an item on the left to start matching.", "แตะเลือกการ์ดฝั่งซ้ายเพื่อเริ่มจับคู่")}</span>
+        </div>
+      `;
+      bodyEl.querySelectorAll("[data-left]").forEach((btn) => {
+        btn.onclick = () => { s.selectedLeft = btn.dataset.left; s.wrongPair = null; renderMatching(); };
+      });
+      bodyEl.querySelectorAll("[data-right]").forEach((btn) => {
+        btn.onclick = () => {
+          if (!s.selectedLeft) return;
+          const rid = btn.dataset.right;
+          if (rid === s.selectedLeft) { s.matched.add(rid); s.selectedLeft = null; s.wrongPair = null; }
+          else { s.mistakes += 1; s.wrongPair = [s.selectedLeft, rid]; s.selectedLeft = null; }
+          renderMatching();
+        };
+      });
+    };
+
+    /* 2. RAPID STAMP */
+    const initStamp = () => {
+      stampState = { data: pack().stamp, idx: 0, score: 0, lastStamp: null, lastCorrect: null };
+    };
+    const renderStamp = () => {
+      if (!stampState) initStamp();
+      const s = stampState;
+      const d = s.data;
+      const done = s.idx >= d.cases.length;
+      setScore(t(`Score: ${s.score}/${d.cases.length}`, `ถูก: ${s.score}/${d.cases.length}`));
+      if (done) {
+        bodyEl.innerHTML = `
+          <div class="desk-wrap">
+            <div class="feedback-bar is-win" style="justify-content:center; padding:24px; flex-direction:column;">
+              <strong style="font-size:18px;">${t(`Round Complete — ${s.score}/${d.cases.length} Accurate!`, `เคลียร์ครบทุกใบแล้ว — แม่นยำ ${s.score}/${d.cases.length}!`)}</strong>
+              <button class="btn-primary" type="button" id="stamp-again" style="margin-top:8px;">${t("Play Again", "เล่นอีกครั้ง")}</button>
+            </div>
+          </div>
+        `;
+        document.getElementById("stamp-again").onclick = () => { initStamp(); renderStamp(); };
+        return;
+      }
+      const c = d.cases[s.idx];
+      bodyEl.innerHTML = `
+        <div class="desk-wrap">
+          <div class="case-file">
+            <div class="case-file__meta">
+              <span>${c.code}</span>
+              <span>${t(`Card ${s.idx + 1} of ${d.cases.length}`, `ใบที่ ${s.idx + 1} จาก ${d.cases.length}`)}</span>
+            </div>
+            <h3 class="case-file__title">${t(c.titleEn, c.titleTh)}</h3>
+            <p class="case-file__desc">${t(c.descEn, c.descTh)}</p>
+            <div class="stamp-mark ${s.lastStamp === "left" ? "is-left is-visible" : s.lastStamp === "right" ? "is-right is-visible" : ""}">
+              ${s.lastStamp === "left" ? t(d.leftStampEn, d.leftStampTh) : s.lastStamp === "right" ? t(d.rightStampEn, d.rightStampTh) : ""}
+            </div>
+          </div>
+          <div class="stamp-actions">
+            <button class="stamp-btn stamp-btn--left" type="button" data-stamp="left" ${s.lastStamp ? "disabled" : ""}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>${t(d.leftBtnEn, d.leftBtnTh)}</span>
+            </button>
+            <button class="stamp-btn stamp-btn--right" type="button" data-stamp="right" ${s.lastStamp ? "disabled" : ""}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>
+              <span>${t(d.rightBtnEn, d.rightBtnTh)}</span>
+            </button>
+          </div>
+          ${s.lastStamp ? `
+            <div class="feedback-bar ${s.lastCorrect ? "is-win" : "is-error"}">
+              <span>${s.lastCorrect ? t("Correct! ", "ถูกต้อง! ") : t("Not quite! ", "ยังไม่ถูก! ")}${t(c.whyEn, c.whyTh)}</span>
+              <button class="btn-primary" type="button" id="stamp-next">${t("Next Card →", "ใบถัดไป →")}</button>
+            </div>
+          ` : ""}
+        </div>
+      `;
+      bodyEl.querySelectorAll("[data-stamp]").forEach((btn) => {
+        btn.onclick = () => {
+          s.lastStamp = btn.dataset.stamp;
+          s.lastCorrect = s.lastStamp === c.answer;
+          if (s.lastCorrect) s.score += 1;
+          renderStamp();
+        };
+      });
+      const nextBtn = document.getElementById("stamp-next");
+      if (nextBtn) nextBtn.onclick = () => { s.idx += 1; s.lastStamp = null; s.lastCorrect = null; renderStamp(); };
+    };
+
+    /* 3. CATEGORY SORT */
+    const initSort = () => {
+      const data = pack().sorting;
+      const placed = {};
+      data.buckets.forEach((b) => { placed[b.id] = []; });
+      sortState = { data, idx: 0, wrong: false, placed };
+    };
+    const renderSort = () => {
+      if (!sortState) initSort();
+      const s = sortState;
+      const items = s.data.items;
+      const done = s.idx >= items.length;
+      setScore(t(`Sorted: ${s.idx}/${items.length}`, `คัดแยกแล้ว: ${s.idx}/${items.length}`));
+      const cur = items[s.idx];
+      bodyEl.innerHTML = `
+        <div class="sort-tray">
+          ${done
+            ? `<strong style="color:var(--primary); font-size:16px;">${t("All items sorted into their matching categories!", "คัดแยกการ์ดครบทุกหมวดหมู่เรียบร้อยแล้ว!")}</strong>`
+            : `<div class="sort-active-card">
+                 <strong>${t(cur.nameEn, cur.nameTh)}</strong>
+                 <span>${t(cur.hintEn, cur.hintTh)}</span>
+               </div>`
+          }
+        </div>
+        <div class="bucket-grid">
+          ${s.data.buckets.map((b) => `
+            <button class="bucket-btn tone-${b.tone}" type="button" data-bucket="${b.id}" ${done ? "disabled" : ""}>
+              <h4>${t(b.titleEn, b.titleTh)}</h4>
+              <small>${t(b.subEn, b.subTh)}</small>
+              <div class="bucket-chips">
+                ${s.placed[b.id].map((it) => `<span class="bucket-chip">${t(it.nameEn, it.nameTh)}</span>`).join("")}
+              </div>
+            </button>
+          `).join("")}
+        </div>
+        ${s.wrong ? `<div class="feedback-bar is-error"><span>${t("Wrong bucket! Try another category.", "ยังไม่ใช่กล่องนี้ ลองเลือกหมวดหมู่อื่นดูนะ")}</span></div>` : ""}
+      `;
+      bodyEl.querySelectorAll("[data-bucket]").forEach((btn) => {
+        btn.onclick = () => {
+          if (done) return;
+          if (btn.dataset.bucket === cur.bucket) { s.placed[cur.bucket].push(cur); s.idx += 1; s.wrong = false; }
+          else { s.wrong = true; }
+          renderSort();
+        };
+      });
+    };
+
+    /* 4. DECISION PATH */
+    const initScenario = () => {
+      scenState = { data: pack().scenario, step: 0, meter: 70, lastNote: "" };
+    };
+    const renderScenario = () => {
+      if (!scenState) initScenario();
+      const s = scenState;
+      const meterLabel = t(s.data.meterEn, s.data.meterTh);
+      setScore(`${meterLabel}: ${s.meter}%`);
+      const done = s.step >= s.data.steps.length;
+      const cur = s.data.steps[s.step];
+      bodyEl.innerHTML = `
+        <div class="meter-box">
+          <strong style="font-size:13px;">${meterLabel}</strong>
+          <div class="meter-track"><div class="meter-fill" style="width:${Math.max(0, Math.min(100, s.meter))}%"></div></div>
+          <strong style="font-size:13px; color:var(--primary);">${s.meter}%</strong>
+        </div>
+        ${done ? `
+          <div class="feedback-bar is-win" style="flex-direction:column; padding:22px; text-align:center;">
+            <strong style="font-size:16px;">${t(`Scenario Complete! Final ${s.data.meterEn}: ${s.meter}%`, `จบสถานการณ์จำลอง! ${s.data.meterTh}: ${s.meter}%`)}</strong>
+            <span style="font-weight:500;">${s.lastNote}</span>
+          </div>
+        ` : `
+          <div class="scenario-bubble">
+            <span class="scenario-speaker">${cur.speaker}</span>
+            <p>${t(cur.promptEn, cur.promptTh)}</p>
+          </div>
+          <div class="scenario-choices">
+            ${cur.choices.map((ch, idx) => `
+              <button class="choice-card" type="button" data-choice="${idx}">${t(ch.textEn, ch.textTh)}</button>
+            `).join("")}
+          </div>
+          ${s.lastNote ? `<div class="feedback-bar"><span>${s.lastNote}</span></div>` : ""}
+        `}
+      `;
+      bodyEl.querySelectorAll("[data-choice]").forEach((btn) => {
+        btn.onclick = () => {
+          const ch = cur.choices[Number(btn.dataset.choice)];
+          s.meter = Math.max(0, Math.min(100, s.meter + ch.delta));
+          s.lastNote = t(ch.noteEn, ch.noteTh);
+          s.step += 1;
+          renderScenario();
+        };
+      });
+    };
+
+    /* 5. RAPID BLITZ */
+    const initSprint = () => {
+      sprintState = { items: pack().sprint, idx: 0, combo: 0, points: 0, lastMsg: "", lastOk: true };
+    };
+    const renderSprint = () => {
+      if (!sprintState) initSprint();
+      const s = sprintState;
+      setScore(t(`Points: ${s.points}`, `คะแนน: ${s.points}`));
+      const done = s.idx >= s.items.length;
+      if (done) {
+        bodyEl.innerHTML = `<div class="feedback-bar is-win" style="justify-content:center; padding:24px;"><strong>${t(`Blitz Finished! Total Points: ${s.points}`, `จบสปรินต์! คะแนนรวม ${s.points} แต้ม`)}</strong></div>`;
+        return;
+      }
+      const item = s.items[s.idx];
+      bodyEl.innerHTML = `
+        <div class="sprint-card">
+          <span class="combo-pill">${t(`Combo x${Math.max(1, s.combo)} · Question ${s.idx + 1}/${s.items.length}`, `คอมโบ x${Math.max(1, s.combo)} · ข้อที่ ${s.idx + 1}/${s.items.length}`)}</span>
+          <p class="sprint-statement">${t(item.qEn, item.qTh)}</p>
+          <div class="stamp-actions">
+            <button class="stamp-btn stamp-btn--left" type="button" data-tf="true">${t("TRUE", "จริง (TRUE)")}</button>
+            <button class="stamp-btn stamp-btn--right" type="button" data-tf="false">${t("FALSE", "เท็จ (FALSE)")}</button>
+          </div>
+          ${s.lastMsg ? `<div class="feedback-bar ${s.lastOk ? "" : "is-error"}" style="margin-top:16px;"><span>${s.lastMsg}</span></div>` : ""}
+        </div>
+      `;
+      bodyEl.querySelectorAll("[data-tf]").forEach((btn) => {
+        btn.onclick = () => {
+          if ((btn.dataset.tf === "true") === item.ans) {
+            s.combo += 1;
+            const gained = 100 * s.combo;
+            s.points += gained;
+            s.lastOk = true;
+            s.lastMsg = t(`Correct! +${gained} pts (Combo x${s.combo})`, `ถูกต้อง! +${gained} แต้ม (คอมโบ x${s.combo})`);
+          } else {
+            s.combo = 0; s.lastOk = false;
+            s.lastMsg = t("Combo reset! Keep going.", "คอมโบรีเซ็ต! ลุยต่อข้อถัดไป");
+          }
+          s.idx += 1;
+          renderSprint();
+        };
+      });
+    };
+
+    /* 6. SPOT THE CLUES */
+    const initInspector = () => {
+      inspState = { data: pack().inspector, found: new Set(), safeClicked: new Set() };
+    };
+    const renderInspector = () => {
+      if (!inspState) initInspector();
+      const s = inspState;
+      const totalTargets = s.data.spots.filter((x) => x.isTarget).length;
+      const done = s.found.size === totalTargets;
+      setScore(t(`Found: ${s.found.size}/${totalTargets}`, `พบแล้ว: ${s.found.size}/${totalTargets}`));
+      bodyEl.innerHTML = `
+        <div class="mock-spec">
+          <div class="mock-spec__bar">
+            <span>${s.data.barTitle}</span>
+            <span>${t(s.data.goalEn, s.data.goalTh)}</span>
+          </div>
+          <div class="mock-spec__grid">
+            ${s.data.spots.map((sp) => `
+              <button class="hotspot${s.found.has(sp.id) ? " is-flag-found" : ""}${s.safeClicked.has(sp.id) ? " is-safe-click" : ""}" type="button" data-spot="${sp.id}" ${s.found.has(sp.id) || s.safeClicked.has(sp.id) ? "disabled" : ""}>
+                <strong>${t(sp.titleEn, sp.titleTh)}</strong>
+                <span>${t(sp.descEn, sp.descTh)}</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+        <div class="feedback-bar${done ? " is-win" : ""}">
+          <span>${done ? t(`All ${totalTargets} target clues found!`, `พบครบทั้ง ${totalTargets} จุดสำคัญแล้ว ยอดเยี่ยมมาก!`) : t(`Found ${s.found.size} of ${totalTargets}. Safe items turn green if clicked.`, `พบแล้ว ${s.found.size} จาก ${totalTargets} จุด (จุดที่ปกติจะขึ้นสีเขียวเมื่อกด)`)}</span>
+        </div>
+      `;
+      bodyEl.querySelectorAll("[data-spot]").forEach((btn) => {
+        btn.onclick = () => {
+          const sp = s.data.spots.find((x) => x.id === btn.dataset.spot);
+          if (!sp) return;
+          if (sp.isTarget) s.found.add(sp.id);
+          else s.safeClicked.add(sp.id);
+          renderInspector();
+        };
+      });
+    };
+
+    /* 7. STEP SEQUENCE */
+    const initOrder = () => {
+      const steps = pack().order;
+      orderState = { correct: steps, shuffled: [steps[2], steps[0], steps[3], steps[1]], chosen: [], wrong: false };
+    };
+    const renderOrder = () => {
+      if (!orderState) initOrder();
+      const s = orderState;
+      const done = s.chosen.length === 4;
+      setScore(t(`Steps: ${s.chosen.length}/4`, `เรียงแล้ว: ${s.chosen.length}/4`));
+      bodyEl.innerHTML = `
+        <div class="order-slots">
+          ${[0, 1, 2, 3].map((i) => `
+            <div class="order-slot${s.chosen[i] ? " is-filled" : ""}">
+              <span class="order-slot__num">${t(`Step ${i + 1}`, `ขั้นที่ ${i + 1}`)}</span>
+              <span class="order-slot__text">${s.chosen[i] ? t(s.chosen[i].en, s.chosen[i].th) : t("Tap next step...", "แตะเลือกขั้นต่อไป...")}</span>
+            </div>
+          `).join("")}
+        </div>
+        <div class="order-pool">
+          ${s.shuffled.map((st) => {
+            const used = s.chosen.some((c) => c.rank === st.rank);
+            return `<button class="order-tile" type="button" data-rank="${st.rank}" ${used ? "disabled" : ""}>${t(st.en, st.th)}</button>`;
+          }).join("")}
+        </div>
+        <div class="feedback-bar${done ? " is-win" : s.wrong ? " is-error" : ""}">
+          <span>${done ? t("Perfect sequence from Step 1 to Step 4!", "เรียงลำดับขั้นตอนตั้งแต่ขั้นที่ 1 ถึงขั้นที่ 4 ได้สมบูรณ์แบบ!") : s.wrong ? t("Not the next step — think about what comes first.", "ลำดับยังไม่ถูก ลองดูว่าขั้นไหนต้องมาก่อน") : t("Tap the tiles in chronological order from Step 1 to Step 4.", "แตะการ์ดด้านล่างเรียงลำดับตั้งแต่ขั้นที่ 1 ถึงขั้นที่ 4")}</span>
+        </div>
+      `;
+      bodyEl.querySelectorAll("[data-rank]").forEach((btn) => {
+        btn.onclick = () => {
+          const rank = Number(btn.dataset.rank);
+          const expected = s.chosen.length + 1;
+          if (rank === expected) { s.chosen.push(s.correct[expected - 1]); s.wrong = false; }
+          else { s.wrong = true; }
+          renderOrder();
+        };
+      });
+    };
+
+    const renderAll = () => {
+      document.documentElement.lang = lang;
+      document.getElementById("page-title").textContent = t("Universal Mini-Game Templates", "ดราฟมินิเกมมาตรฐานสำหรับทุกวิชา");
+      document.getElementById("page-sub").textContent = t(
+        "Reusable across ANY course subject — switch the demo subject pack below to test the same 7 engines",
+        "ใช้ได้กับบทเรียนทุกสาขา — ลองกดสลับวิชาตัวอย่างด้านล่างเพื่อดูมินิเกมทั้ง 7 แบบปรับตามเนื้อหาอัตโนมัติ"
+      );
+      document.getElementById("subject-bar-label").querySelector("span").textContent = t("Try Any Subject Pack:", "ลองสลับวิชาตัวอย่าง:");
+      document.getElementById("reset-label").textContent = t("Reset", "เริ่มใหม่");
+
+      document.querySelectorAll("[data-lang]").forEach((btn) => {
+        btn.classList.toggle("is-active", btn.dataset.lang === lang);
+      });
+
+      subjectChipsEl.innerHTML = SUBJECTS.map((sub) => `
+        <button class="subject-chip${sub.id === activeSubject ? " is-active" : ""}" type="button" data-subject="${sub.id}">
+          <span>${t(sub.nameEn, sub.nameTh)}</span>
+        </button>
+      `).join("");
+      subjectChipsEl.querySelectorAll("[data-subject]").forEach((btn) => {
+        btn.onclick = () => {
+          activeSubject = btn.dataset.subject;
+          resetAllStates();
+          renderAll();
+        };
+      });
+
+      tabsEl.innerHTML = GAMES.map((g) => `
+        <button class="tab-btn${g.id === activeGame ? " is-active" : ""}" type="button" data-game="${g.id}">
+          <span class="tab-stage">${t(g.stageEn, g.stageTh)}</span>
+          <span>${t(g.nameEn, g.nameTh)}</span>
+        </button>
+      `).join("");
+      tabsEl.querySelectorAll("[data-game]").forEach((btn) => {
+        btn.onclick = () => { activeGame = btn.dataset.game; renderAll(); };
+      });
+
+      const meta = GAMES.find((g) => g.id === activeGame) || GAMES[0];
+      const subMeta = SUBJECTS.find((x) => x.id === activeSubject) || SUBJECTS[0];
+      badgeEl.textContent = `${t(meta.stageEn, meta.stageTh)} · ${t(subMeta.nameEn, subMeta.nameTh)}`;
+      titleEl.textContent = t(meta.nameEn, meta.nameTh);
+      subEl.textContent = t(meta.subEn, meta.subTh);
+      schemaFootEl.innerHTML = `<span>${t("Subject-Agnostic Engine", "เอนจินกลางใช้ได้ทุกวิชา")}</span><code>${t(meta.schemaEn, meta.schemaTh)}</code>`;
+
+      if (activeGame === "matching") renderMatching();
+      else if (activeGame === "stamp") renderStamp();
+      else if (activeGame === "sorting") renderSort();
+      else if (activeGame === "scenario") renderScenario();
+      else if (activeGame === "sprint") renderSprint();
+      else if (activeGame === "inspector") renderInspector();
+      else if (activeGame === "order") renderOrder();
+    };
+
+    document.querySelectorAll("[data-lang]").forEach((btn) => {
+      btn.onclick = () => { lang = btn.dataset.lang; renderAll(); };
+    });
+
+    document.getElementById("stage-reset").onclick = () => {
+      if (activeGame === "matching") initMatching();
+      else if (activeGame === "stamp") initStamp();
+      else if (activeGame === "sorting") initSort();
+      else if (activeGame === "scenario") initScenario();
+      else if (activeGame === "sprint") initSprint();
+      else if (activeGame === "inspector") initInspector();
+      else if (activeGame === "order") initOrder();
+      renderAll();
+    };
+
+    renderAll();
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+@echo off
+powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0server\stop-silent.ps1"
+exit /b 0

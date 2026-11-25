@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearningHaus — Minimalist Achievements Page Drafts (4 Styles)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8faf8;
+      --surface: #ffffff;
+      --green: #3b8146;
+      --green-dark: #2a6333;
+      --green-soft: #eef7ef;
+      --green-line: #d4e6d7;
+      --ink: #18261b;
+      --muted: #687a6c;
+      --subtle: #94a397;
+      --line: #e7eee8;
+      --font: "Space Grotesk", "Noto Sans Thai", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+    [hidden] { display: none !important; }
+
+    /* Sticky Minimal Top Draft Switcher */
+    .draft-nav {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 22px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+    .draft-nav__brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .draft-nav__dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .style-seg {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 999px;
+      background: #eef3ef;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+    .style-seg button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 7px 13px;
+      border-radius: 999px;
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .style-seg button.is-active {
+      background: #ffffff;
+      color: var(--ink);
+      box-shadow: 0 2px 6px rgba(18, 40, 22, 0.08);
+    }
+
+    /* Main Workspace Frame */
+    .canvas {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 34px 22px 84px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Shared Minimal Controls */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      font: 600 12.5px/1 var(--font);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 140ms ease;
+    }
+    .btn:hover { border-color: #bfd8c3; background: var(--green-soft); color: var(--green-dark); }
+    .btn--primary { background: var(--green); border-color: var(--green); color: #ffffff; }
+    .btn--primary:hover { background: var(--green-dark); border-color: var(--green-dark); color: #ffffff; }
+    .btn--sm { height: 30px; padding: 0 11px; font-size: 11.5px; }
+
+    .tabs-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+    .tabs-line__group {
+      display: flex;
+      gap: 4px;
+    }
+    .tab-u {
+      position: relative;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 10px 14px;
+      font: 600 13px/1 var(--font);
+      cursor: pointer;
+    }
+    .tab-u:hover { color: var(--ink); }
+    .tab-u.is-active { color: var(--green-dark); }
+    .tab-u.is-active::after {
+      content: "";
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: -1px;
+      height: 2px;
+      border-radius: 99px;
+      background: var(--green);
+    }
+    .tab-u small {
+      margin-left: 5px;
+      font-size: 11px;
+      color: var(--subtle);
+    }
+    .tab-u.is-active small { color: var(--green); }
+
+    .filter-pills {
+      display: inline-flex;
+      gap: 4px;
+      padding-bottom: 6px;
+    }
+    .fpill {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font: 600 11.5px/1 var(--font);
+      cursor: pointer;
+    }
+    .fpill.is-active {
+      background: #ffffff;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+
+    .hairline-meter {
+      width: 100%;
+      height: 5px;
+      border-radius: 99px;
+      background: #e8efe9;
+      overflow: hidden;
+    }
+    .hairline-meter > span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--green);
+      transition: width 260ms ease;
+    }
+
+    .badge-img {
+      display: block;
+      object-fit: contain;
+      transition: transform 180ms ease, filter 180ms ease, opacity 180ms ease;
+    }
+    .is-locked .badge-img {
+      filter: grayscale(1);
+      opacity: 0.34;
+    }
+
+    .reward-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .pin-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--subtle);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: all 140ms ease;
+      flex-shrink: 0;
+    }
+    .pin-btn:hover { border-color: var(--green); color: var(--green-dark); }
+    .pin-btn.is-pinned {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+
+    /* ==================== STYLE 1: GALLERY SHELF (APPLE / NOTION MINIMAL) ==================== */
+    .s1-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .s1-head h1 {
+      margin: 0;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+    }
+    .s1-head__sub {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .s1-count-pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .s1-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .s1-tile {
+      position: relative;
+      padding: 22px 14px 18px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+    }
+    .s1-tile:hover {
+      transform: translateY(-2px);
+      border-color: #c3dcc7;
+      box-shadow: 0 10px 26px rgba(18, 40, 22, 0.06);
+    }
+    .s1-tile.is-locked { background: #fbfcfb; }
+    .s1-tile__status {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+    .s1-tile__status--ok { background: var(--green-soft); color: var(--green-dark); }
+    .s1-tile__status--lock { color: #bcc8be; }
+    .s1-tile__pin {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .s1-tile .badge-img { width: 64px; height: 64px; }
+    .s1-tile strong { font-size: 13.5px; line-height: 1.25; color: var(--ink); }
+    .s1-tile.is-locked strong { color: var(--muted); }
+    .s1-tile small { font-size: 11px; color: var(--subtle); }
+
+    /* ==================== STYLE 2: EDITORIAL LIST (LINEAR / STRIPE) ==================== */
+    .s2-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+    .s2-top__left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .mini-ring {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) var(--pct, 25%), #e7efe8 0);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .mini-ring span {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--green-dark);
+    }
+    .s2-pinned-strip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .s2-pinned-slot {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      border: 1px dashed #c8dccb;
+      background: #f8fbf8;
+      display: grid;
+      place-items: center;
+    }
+    .s2-pinned-slot.is-filled {
+      border-style: solid;
+      border-color: var(--green-line);
+      background: var(--green-soft);
+    }
+    .s2-pinned-slot img { width: 28px; height: 28px; object-fit: contain; }
+    .s2-list {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    .s2-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      transition: background-color 120ms ease;
+    }
+    .s2-row:last-child { border-bottom: 0; }
+    .s2-row:hover { background: #fafcfa; }
+    .s2-row .badge-img { width: 42px; height: 42px; flex-shrink: 0; }
+    .s2-row__body { flex: 1; min-width: 0; }
+    .s2-row__title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .s2-row__title strong { font-size: 14px; color: var(--ink); }
+    .s2-row.is-locked .s2-row__title strong { color: var(--muted); }
+    .s2-row__body p { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+    .s2-row__right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .s2-prog-text {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--subtle);
+      font-family: ui-monospace, Consolas, monospace;
+    }
+    .s2-done-chip {
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green-dark);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* ==================== STYLE 3: PINNED SHOWCASE + COMPACT CARDS ==================== */
+    .s3-showcase {
+      padding: 20px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .s3-showcase__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .s3-showcase__head strong { font-size: 14.5px; }
+    .s3-showcase__head span { font-size: 12px; color: var(--muted); }
+    .s3-slots {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .s3-slot {
+      padding: 14px;
+      border-radius: 15px;
+      border: 1.5px dashed #d0e1d3;
+      background: #f9fcf9;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 70px;
+    }
+    .s3-slot.is-filled {
+      border-style: solid;
+      border-color: var(--green-line);
+      background: var(--green-soft);
+    }
+    .s3-slot img { width: 42px; height: 42px; object-fit: contain; }
+    .s3-slot__copy { flex: 1; min-width: 0; }
+    .s3-slot__copy strong { display: block; font-size: 13px; }
+    .s3-slot__copy small { font-size: 11px; color: var(--muted); }
+    .s3-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .s3-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 140ms ease, transform 140ms ease;
+    }
+    .s3-card:hover { border-color: #c1dbc5; transform: translateY(-2px); }
+    .s3-card__top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .s3-card .badge-img { width: 48px; height: 48px; }
+    .s3-card strong { display: block; font-size: 14px; margin-bottom: 3px; }
+    .s3-card p { margin: 0; font-size: 12px; color: var(--muted); line-height: 1.45; }
+    .s3-card__foot {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ==================== STYLE 4: SWISS BENTO STUDIO ==================== */
+    .s4-bento {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 14px;
+    }
+    .s4-box {
+      padding: 20px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .s4-ring-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .big-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) var(--pct, 25%), #e9f0ea 0);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .big-ring span {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .s4-cat-bars {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .s4-cat-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .s4-cat-bar b { color: var(--ink); }
+    .s4-next {
+      background: linear-gradient(135deg, #f3faf4 0%, #ffffff 100%);
+      border-color: var(--green-line);
+    }
+    .s4-next__eyebrow {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--green-dark);
+    }
+    .s4-next__main {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .s4-next__main img { width: 52px; height: 52px; object-fit: contain; opacity: 0.72; }
+    .s4-next__main strong { display: block; font-size: 15px; }
+    .s4-next__main p { margin: 3px 0 0; font-size: 12px; color: var(--muted); }
+    .s4-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .s4-card {
+      padding: 15px 16px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: border-color 140ms ease;
+    }
+    .s4-card:hover { border-color: #c1dbc5; }
+    .s4-card .badge-img { width: 46px; height: 46px; flex-shrink: 0; }
+    .s4-card__copy { flex: 1; min-width: 0; }
+    .s4-card__copy strong { display: block; font-size: 13.5px; }
+    .s4-card__copy p { margin: 2px 0 6px; font-size: 11.5px; color: var(--muted); }
+
+    /* Minimal Detail Drawer (for inspecting any badge) */
+    .drawer-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      background: rgba(15, 28, 17, 0.28);
+      display: flex;
+      justify-content: flex-end;
+    }
+    .drawer {
+      width: min(380px, 100%);
+      height: 100%;
+      background: #ffffff;
+      padding: 26px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-shadow: -12px 0 36px rgba(15, 32, 18, 0.14);
+    }
+    .drawer__top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .drawer__hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      padding: 18px 12px;
+      border-radius: 18px;
+      background: #f7fbf7;
+      border: 1px solid var(--line);
+    }
+    .drawer__hero img { width: 88px; height: 88px; object-fit: contain; }
+    .drawer__hero h3 { margin: 0; font-size: 19px; }
+    .drawer__hero p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .drawer__meta {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12.5px;
+    }
+    .drawer__meta small { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 10.5px; letter-spacing: 0.05em; }
+
+    @media (max-width: 780px) {
+      .s1-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .s3-grid, .s3-slots, .s4-bento, .s4-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="draft-nav">
+    <div class="draft-nav__brand">
+      <span class="draft-nav__dot"></span>
+      <span>Minimalist Achievements Drafts</span>
+    </div>
+    <nav class="style-seg" role="tablist" aria-label="Achievement page styles">
+      <button type="button" class="is-active" data-style="1">1. Gallery Shelf</button>
+      <button type="button" data-style="2">2. Editorial List</button>
+      <button type="button" data-style="3">3. Pinned Showcase</button>
+      <button type="button" data-style="4">4. Swiss Bento</button>
+    </nav>
+  </header>
+
+  <main class="canvas" id="app"></main>
+
+  <!-- Minimal Slide-Over Detail Drawer -->
+  <div class="drawer-bg" id="drawer-bg" hidden>
+    <div class="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-title">
+      <div class="drawer__top">
+        <span style="font-size:12px; font-weight:700; color:var(--muted); letter-spacing:0.05em; text-transform:uppercase;">Badge Details</span>
+        <button type="button" class="btn btn--sm" id="dr-close" aria-label="Close">×</button>
+      </div>
+      <div class="drawer__hero" id="dr-hero">
+        <img id="dr-img" src="" alt="">
+        <h3 id="dr-title"></h3>
+        <p id="dr-desc"></p>
+      </div>
+      <div class="drawer__meta">
+        <small>Requirement</small>
+        <span id="dr-req"></span>
+        <div class="hairline-meter"><span id="dr-bar" style="width:0%"></span></div>
+        <span id="dr-prog" style="font-size:11.5px; color:var(--muted); font-weight:600;"></span>
+      </div>
+      <div class="drawer__meta" id="dr-reward-box" hidden>
+        <small>Cat Cosmetic Reward</small>
+        <span id="dr-reward"></span>
+      </div>
+      <div style="margin-top:auto; display:flex; gap:8px;">
+        <button type="button" class="btn btn--primary" style="flex:1;" id="dr-pin"></button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const IMG = "../../lesson-assets/achievements/normalized/";
+    const BADGES = [
+      // General (12)
+      { id: "beginner", cat: "general", name: "Beginner", desc: "Your learning journey has begun.", req: "Complete your first lesson.", img: "beginner.png", unlocked: true, cur: 1, max: 1, reward: "Sprout Prop" },
+      { id: "knowledge-seeker", cat: "general", name: "Knowledge Seeker", desc: "Completed five unique lessons.", req: "Complete 5 different lessons.", img: "knowledge-seeker.png", unlocked: true, cur: 5, max: 5, reward: "Scholar Glasses" },
+      { id: "quiz-challenger", cat: "general", name: "Quiz Challenger", desc: "Completed your first quiz.", req: "Complete your first quiz.", img: "quiz-challenger.png", unlocked: true, cur: 1, max: 1, reward: "Headband Prop" },
+      { id: "perfect-score", cat: "general", name: "Perfect Score", desc: "Every answer was correct.", req: "Score 100% on a quiz (5+ questions).", img: "perfect-score.png", unlocked: true, cur: 1, max: 1, reward: "Star Crown" },
+      { id: "fast-thinker", cat: "general", name: "Fast Thinker", desc: "Quick thinking and strong accuracy.", req: "8/10 correct in 3 minutes or less.", img: "fast-thinker.png", unlocked: false, cur: 6, max: 8, reward: "Cyber Visor" },
+      { id: "comeback", cat: "general", name: "Comeback Learner", desc: "Returned after a failed quiz and passed.", req: "Fail a quiz, then pass it.", img: "comeback-learner.png", unlocked: false, cur: 0, max: 1 },
+      { id: "curious-explorer", cat: "general", name: "Curious Explorer", desc: "Explored different fields of study.", req: "Complete a lesson in 3 subjects.", img: "curious-explorer.png", unlocked: false, cur: 2, max: 3, reward: "Beret Prop" },
+      { id: "growth-mindset", cat: "general", name: "Growth Mindset", desc: "Practice helped you improve.", req: "Replay a quiz and beat your score.", img: "growth-mindset.png", unlocked: true, cur: 1, max: 1 },
+      { id: "consistent-learner", cat: "general", name: "Consistent Learner", desc: "Small steps add up over time.", req: "Learn on 3 different days.", img: "consistent-learner.png", unlocked: false, cur: 2, max: 3 },
+      { id: "course-finisher", cat: "general", name: "Course Finisher", desc: "Completed a whole course.", req: "Complete 1 full course.", img: "course-finisher.png", unlocked: false, cur: 0, max: 1, reward: "Grad Cap" },
+      { id: "expert", cat: "general", name: "Expert", desc: "Completed several courses.", req: "Complete 3 full courses.", img: "expert.png", unlocked: false, cur: 0, max: 3, reward: "Wizard Hat" },
+      { id: "master", cat: "general", name: "Master", desc: "Completed a broad course collection.", req: "Complete 5 full courses.", img: "master.png", unlocked: false, cur: 0, max: 5, reward: "Golden Halo" },
+      // Subjects (8)
+      { id: "chapter-1", cat: "subject", name: "Law Foundations", desc: "Mastered EU AI Act Chapter 1.", req: "Clear all 10 stages in Chapter 1.", img: "law-foundations.png", unlocked: true, cur: 10, max: 10, reward: "Law Pillars BG" },
+      { id: "chapter-2", cat: "subject", name: "Safe Boundaries", desc: "Mastered prohibited AI practices.", req: "Clear all 10 stages in Chapter 2.", img: "safe-boundaries.png", unlocked: false, cur: 4, max: 10 },
+      { id: "chapter-3", cat: "subject", name: "Risk Analyst", desc: "Mastered high-risk AI systems.", req: "Clear all 10 stages in Chapter 3.", img: "risk-analyst.png", unlocked: false, cur: 0, max: 10 },
+      { id: "chapter-4", cat: "subject", name: "Transparent Thinker", desc: "Mastered AI transparency duties.", req: "Clear all 10 stages in Chapter 4.", img: "transparent-thinker.png", unlocked: false, cur: 0, max: 10 },
+      { id: "chapter-5", cat: "subject", name: "Purpose Keeper", desc: "Mastered GPAI model rules.", req: "Clear all 10 stages in Chapter 5.", img: "purpose-keeper.png", unlocked: false, cur: 0, max: 10 },
+      { id: "chapter-6", cat: "subject", name: "Innovation Guide", desc: "Mastered sandboxes & SME support.", req: "Clear all 10 stages in Chapter 6.", img: "innovation-guide.png", unlocked: false, cur: 0, max: 10 },
+      { id: "chapter-7", cat: "subject", name: "Governance Watch", desc: "Mastered EU AI governance.", req: "Clear all 10 stages in Chapter 7.", img: "governance-watch.png", unlocked: false, cur: 0, max: 10 },
+      { id: "chapter-8", cat: "subject", name: "Rights Guardian", desc: "Mastered user rights & enforcement.", req: "Clear all 10 stages in Chapter 8.", img: "rights-guardian.png", unlocked: false, cur: 0, max: 10 },
+      // Creator (4)
+      { id: "first-creator", cat: "creator", name: "First Creator", desc: "Your first class reached learners.", req: "Publish your first class.", img: "first-creator.png", unlocked: true, cur: 1, max: 1, reward: "Flower Crown" },
+      { id: "knowledge-sharer", cat: "creator", name: "Knowledge Sharer", desc: "Created lessons for others.", req: "Create 5 lessons.", img: "knowledge-sharer.png", unlocked: false, cur: 4, max: 5 },
+      { id: "course-architect", cat: "creator", name: "Course Architect", desc: "Built a collection of classes.", req: "Publish 3 classes.", img: "course-architect.png", unlocked: false, cur: 1, max: 3 },
+      { id: "learning-mentor", cat: "creator", name: "Learning Mentor", desc: "Helped learners reach the finish.", req: "10 students complete your class.", img: "learning-mentor.png", unlocked: false, cur: 2, max: 10 }
+    ];
+
+    const CATS = [
+      { id: "general", label: "General" },
+      { id: "subject", label: "Subjects" },
+      { id: "creator", label: "Creator" }
+    ];
+
+    const state = {
+      style: "1",
+      cat: "general",
+      filter: "all", // all | unlocked | locked
+      pinned: ["beginner", "perfect-score", "chapter-1"],
+      drawerId: null
+    };
+
+    const ICO = {
+      check: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+      lock: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+      pin: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+      gift: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg>`
+    };
+
+    const unlockedTotal = () => BADGES.filter((b) => b.unlocked).length;
+    const visibleBadges = () => BADGES.filter((b) => {
+      if (b.cat !== state.cat) return false;
+      if (state.filter === "unlocked" && !b.unlocked) return false;
+      if (state.filter === "locked" && b.unlocked) return false;
+      return true;
+    });
+
+    const tabsMarkup = () => `
+      <div class="tabs-line">
+        <div class="tabs-line__group" role="tablist">
+          ${CATS.map((c) => {
+            const list = BADGES.filter((b) => b.cat === c.id);
+            const done = list.filter((b) => b.unlocked).length;
+            return `<button type="button" class="tab-u${state.cat === c.id ? " is-active" : ""}" data-cat="${c.id}">${c.label}<small>${done}/${list.length}</small></button>`;
+          }).join("")}
+        </div>
+        <div class="filter-pills">
+          ${[["all","All"],["unlocked","Unlocked"],["locked","Locked"]].map(([k, lbl]) =>
+            `<button type="button" class="fpill${state.filter === k ? " is-active" : ""}" data-filter="${k}">${lbl}</button>`
+          ).join("")}
+        </div>
+      </div>
+    `;
+
+    const renderStyle1 = () => {
+      const done = unlockedTotal();
+      const pct = Math.round((done / BADGES.length) * 100);
+      const list = visibleBadges();
+      return `
+        <header class="s1-head">
+          <div>
+            <h1>Achievements</h1>
+            <div class="s1-head__sub">
+              <span class="s1-count-pill">${done} / ${BADGES.length} unlocked</span>
+              <span>Click any badge to view requirement &amp; pin to your profile</span>
+            </div>
+          </div>
+          <button type="button" class="btn" data-style="3">Pinned on Profile (${state.pinned.length}/3)</button>
+        </header>
+        <div class="hairline-meter"><span style="width:${pct}%"></span></div>
+        ${tabsMarkup()}
+        <section class="s1-grid">
+          ${list.map((b) => {
+            const isPinned = state.pinned.includes(b.id);
+            return `
+              <article class="s1-tile${b.unlocked ? "" : " is-locked"}" data-inspect="${b.id}">
+                ${isPinned ? `<span class="s1-tile__pin" title="Pinned on Profile"></span>` : ""}
+                <span class="s1-tile__status ${b.unlocked ? "s1-tile__status--ok" : "s1-tile__status--lock"}">${b.unlocked ? ICO.check : ICO.lock}</span>
+                <img class="badge-img" src="${IMG}${b.img}" alt="${b.name}">
+                <strong>${b.name}</strong>
+                <small>${b.unlocked ? (b.reward ? `Reward: ${b.reward}` : "Unlocked") : `${b.cur} / ${b.max}`}</small>
+              </article>
+            `;
+          }).join("")}
+        </section>
+      `;
+    };
+
+    const renderStyle2 = () => {
+      const done = unlockedTotal();
+      const pct = Math.round((done / BADGES.length) * 100);
+      const list = visibleBadges();
+      return `
+        <section class="s2-top">
+          <div class="s2-top__left">
+            <div class="mini-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
+            <div>
+              <h1 style="margin:0; font-size:22px;">Achievements</h1>
+              <span style="font-size:12.5px; color:var(--muted);">${done} of ${BADGES.length} badges unlocked · Star any unlocked badge to display on Leaderboard</span>
+            </div>
+          </div>
+          <div class="s2-pinned-strip" title="Displayed on Profile & Leaderboard">
+            ${[0, 1, 2].map((i) => {
+              const b = BADGES.find((x) => x.id === state.pinned[i]);
+              return `<div class="s2-pinned-slot${b ? " is-filled" : ""}">${b ? `<img src="${IMG}${b.img}" alt="${b.name}">` : ""}</div>`;
+            }).join("")}
+          </div>
+        </section>
+        ${tabsMarkup()}
+        <section class="s2-list">
+          ${list.map((b) => {
+            const pinned = state.pinned.includes(b.id);
+            return `
+              <article class="s2-row${b.unlocked ? "" : " is-locked"}" data-inspect="${b.id}">
+                <img class="badge-img" src="${IMG}${b.img}" alt="${b.name}">
+                <div class="s2-row__body">
+                  <div class="s2-row__title">
+                    <strong>${b.name}</strong>
+                    ${b.reward ? `<span class="reward-tag">${ICO.gift}${b.reward}</span>` : ""}
+                  </div>
+                  <p>${b.req}</p>
+                </div>
+                <div class="s2-row__right">
+                  ${b.unlocked
+                    ? `<span class="s2-done-chip">Unlocked</span>
+                       <button type="button" class="pin-btn${pinned ? " is-pinned" : ""}" data-pin="${b.id}" title="${pinned ? "Unpin from Profile" : "Pin to Profile"}">${ICO.pin}</button>`
+                    : `<span class="s2-prog-text">${b.cur}/${b.max}</span>`
+                  }
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </section>
+      `;
+    };
+
+    const renderStyle3 = () => {
+      const done = unlockedTotal();
+      const list = visibleBadges();
+      return `
+        <header class="s1-head">
+          <div>
+            <h1>Achievements</h1>
+            <div class="s1-head__sub"><span class="s1-count-pill">${done} / ${BADGES.length}</span><span>Tap the star on any unlocked badge to feature it on your profile</span></div>
+          </div>
+        </header>
+        <section class="s3-showcase">
+          <div class="s3-showcase__head">
+            <strong>Displayed on Your Profile &amp; Leaderboard</strong>
+            <span>${state.pinned.length} / 3 slots filled</span>
+          </div>
+          <div class="s3-slots">
+            ${[0, 1, 2].map((i) => {
+              const b = BADGES.find((x) => x.id === state.pinned[i]);
+              if (!b) return `<div class="s3-slot"><div class="s3-slot__copy"><small>Empty slot · Star any unlocked badge</small></div></div>`;
+              return `
+                <div class="s3-slot is-filled">
+                  <img src="${IMG}${b.img}" alt="${b.name}">
+                  <div class="s3-slot__copy"><strong>${b.name}</strong><small>Slot ${i + 1}</small></div>
+                  <button type="button" class="pin-btn is-pinned" data-pin="${b.id}" title="Remove from slot">×</button>
+                </div>
+              `;
+            }).join("")}
+          </div>
+        </section>
+        ${tabsMarkup()}
+        <section class="s3-grid">
+          ${list.map((b) => {
+            const pinned = state.pinned.includes(b.id);
+            const bpct = Math.round((b.cur / b.max) * 100);
+            return `
+              <article class="s3-card${b.unlocked ? "" : " is-locked"}" data-inspect="${b.id}">
+                <div class="s3-card__top">
+                  <img class="badge-img" src="${IMG}${b.img}" alt="${b.name}">
+                  ${b.unlocked
+                    ? `<button type="button" class="pin-btn${pinned ? " is-pinned" : ""}" data-pin="${b.id}" title="${pinned ? "Pinned" : "Pin to Profile"}">${ICO.pin}</button>`
+                    : `<span style="color:var(--subtle);">${ICO.lock}</span>`
+                  }
+                </div>
+                <div>
+                  <strong>${b.name}</strong>
+                  <p>${b.req}</p>
+                </div>
+                <div class="s3-card__foot">
+                  ${b.unlocked
+                    ? `<span style="color:var(--green-dark); font-weight:700;">Unlocked</span>${b.reward ? `<span class="reward-tag">${b.reward}</span>` : ""}`
+                    : `<div class="hairline-meter" style="flex:1;"><span style="width:${bpct}%"></span></div><span>${b.cur}/${b.max}</span>`
+                  }
+                </div>
+              </article>
+            `;
+          }).join("")}
+        </section>
+      `;
+    };
+
+    const renderStyle4 = () => {
+      const done = unlockedTotal();
+      const pct = Math.round((done / BADGES.length) * 100);
+      const nextClosest = BADGES.filter((b) => !b.unlocked).sort((a, b) => (b.cur / b.max) - (a.cur / a.max))[0];
+      const list = visibleBadges();
+      return `
+        <div class="s4-bento">
+          <section class="s4-box">
+            <div class="s4-ring-row">
+              <div class="big-ring" style="--pct:${pct}%"><span>${pct}%</span></div>
+              <div>
+                <h1 style="margin:0; font-size:22px;">Achievements</h1>
+                <span style="font-size:12.5px; color:var(--muted);">${done} of ${BADGES.length} badges collected</span>
+              </div>
+            </div>
+            <div class="s4-cat-bars">
+              ${CATS.map((c) => {
+                const sub = BADGES.filter((b) => b.cat === c.id);
+                const d = sub.filter((b) => b.unlocked).length;
+                return `
+                  <div class="s4-cat-bar">
+                    <span>${c.label} <b>${d}/${sub.length}</b></span>
+                    <div class="hairline-meter"><span style="width:${Math.round((d / sub.length) * 100)}%"></span></div>
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </section>
+          <section class="s4-box s4-next" data-inspect="${nextClosest.id}" style="cursor:pointer;">
+            <span class="s4-next__eyebrow">Closest Next Unlock</span>
+            <div class="s4-next__main">
+              <img src="${IMG}${nextClosest.img}" alt="${nextClosest.name}">
+              <div>
+                <strong>${nextClosest.name}</strong>
+                <p>${nextClosest.req}</p>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--green-dark); font-weight:700; margin-bottom:5px;">
+                <span>Progress</span><span>${nextClosest.cur} / ${nextClosest.max}</span>
+              </div>
+              <div class="hairline-meter"><span style="width:${Math.round((nextClosest.cur / nextClosest.max) * 100)}%"></span></div>
+            </div>
+          </section>
+        </div>
+        ${tabsMarkup()}
+        <section class="s4-grid">
+          ${list.map((b) => {
+            const pinned = state.pinned.includes(b.id);
+            const bpct = Math.round((b.cur / b.max) * 100);
+            return `
+              <article class="s4-card${b.unlocked ? "" : " is-locked"}" data-inspect="${b.id}">
+                <img class="badge-img" src="${IMG}${b.img}" alt="${b.name}">
+                <div class="s4-card__copy">
+                  <strong>${b.name}</strong>
+                  <p>${b.req}</p>
+                  ${b.unlocked
+                    ? `<div style="display:flex; gap:6px; align-items:center;"><span class="s2-done-chip">Unlocked</span>${b.reward ? `<span class="reward-tag">${b.reward}</span>` : ""}</div>`
+                    : `<div class="hairline-meter"><span style="width:${bpct}%"></span></div>`
+                  }
+                </div>
+                ${b.unlocked ? `<button type="button" class="pin-btn${pinned ? " is-pinned" : ""}" data-pin="${b.id}">${ICO.pin}</button>` : `<span style="font-size:11px; color:var(--subtle); font-weight:700;">${b.cur}/${b.max}</span>`}
+              </article>
+            `;
+          }).join("")}
+        </section>
+      `;
+    };
+
+    const render = () => {
+      document.querySelectorAll(".style-seg button").forEach((b) => b.classList.toggle("is-active", b.dataset.style === state.style));
+      const host = document.getElementById("app");
+      if (state.style === "1") host.innerHTML = renderStyle1();
+      else if (state.style === "2") host.innerHTML = renderStyle2();
+      else if (state.style === "3") host.innerHTML = renderStyle3();
+      else host.innerHTML = renderStyle4();
+    };
+
+    const openDrawer = (id) => {
+      const b = BADGES.find((x) => x.id === id);
+      if (!b) return;
+      state.drawerId = id;
+      const pinned = state.pinned.includes(id);
+      const pct = Math.round((b.cur / b.max) * 100);
+      document.getElementById("dr-img").src = IMG + b.img;
+      document.getElementById("dr-img").style.filter = b.unlocked ? "none" : "grayscale(1)";
+      document.getElementById("dr-img").style.opacity = b.unlocked ? "1" : "0.4";
+      document.getElementById("dr-title").textContent = b.name;
+      document.getElementById("dr-desc").textContent = b.desc;
+      document.getElementById("dr-req").textContent = b.req;
+      document.getElementById("dr-bar").style.width = `${pct}%`;
+      document.getElementById("dr-prog").textContent = b.unlocked ? "Unlocked" : `${b.cur} / ${b.max} (${pct}%)`;
+      const rBox = document.getElementById("dr-reward-box");
+      if (b.reward) {
+        rBox.hidden = false;
+        document.getElementById("dr-reward").textContent = `Unlocks "${b.reward}" in Pixel Cat Studio`;
+      } else {
+        rBox.hidden = true;
+      }
+      const pinBtn = document.getElementById("dr-pin");
+      if (!b.unlocked) {
+        pinBtn.disabled = true;
+        pinBtn.textContent = "Unlock badge to pin on profile";
+      } else {
+        pinBtn.disabled = false;
+        pinBtn.textContent = pinned ? "Pinned on Profile (Click to remove)" : "Pin to Leaderboard Profile";
+      }
+      document.getElementById("drawer-bg").hidden = false;
+    };
+
+    const togglePin = (id) => {
+      const b = BADGES.find((x) => x.id === id);
+      if (!b || !b.unlocked) return;
+      if (state.pinned.includes(id)) {
+        state.pinned = state.pinned.filter((x) => x !== id);
+      } else {
+        if (state.pinned.length >= 3) state.pinned.shift();
+        state.pinned.push(id);
+      }
+      render();
+      if (state.drawerId === id && !document.getElementById("drawer-bg").hidden) openDrawer(id);
+    };
+
+    document.addEventListener("click", (e) => {
+      const styleBtn = e.target.closest("[data-style]");
+      if (styleBtn) { state.style = styleBtn.dataset.style; render(); return; }
+
+      const catBtn = e.target.closest("[data-cat]");
+      if (catBtn) { state.cat = catBtn.dataset.cat; render(); return; }
+
+      const fBtn = e.target.closest("[data-filter]");
+      if (fBtn) { state.filter = fBtn.dataset.filter; render(); return; }
+
+      const pinBtn = e.target.closest("[data-pin]");
+      if (pinBtn) { e.stopPropagation(); togglePin(pinBtn.dataset.pin); return; }
+
+      const inspectEl = e.target.closest("[data-inspect]");
+      if (inspectEl) { openDrawer(inspectEl.dataset.inspect); return; }
+    });
+
+    document.getElementById("dr-pin").addEventListener("click", () => {
+      if (state.drawerId) togglePin(state.drawerId);
+    });
+    document.getElementById("dr-close").addEventListener("click", () => { document.getElementById("drawer-bg").hidden = true; });
+    document.getElementById("drawer-bg").addEventListener("click", (e) => { if (e.target.id === "drawer-bg") e.target.hidden = true; });
+
+    render();
+  </script>
+</body>
+</html>

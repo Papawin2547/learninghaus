@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearningHaus — Learn → Quiz Flow Drafts (Classroom / Kahoot / Learn-First)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6f8f6;
+      --surface: #ffffff;
+      --green: #3b8146;
+      --green-dark: #295f32;
+      --green-soft: #eaf5ec;
+      --green-border: #d2e4d5;
+      --purple: #46178f;
+      --purple-soft: #f2ecfb;
+      --blue: #1a73e8;
+      --blue-soft: #e8f1fd;
+      --gold: #d99b1e;
+      --gold-soft: #fff8e4;
+      --ink: #1d2b20;
+      --muted: #5d6f61;
+      --line: #e2eae3;
+      --font: "Space Grotesk", "Noto Sans Thai", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font);
+    }
+
+    /* Top Switcher Bar */
+    .draft-bar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 20px;
+      background: #182b1c;
+      color: #ffffff;
+      flex-wrap: wrap;
+    }
+    .draft-bar__title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .draft-bar__pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .style-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .style-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.24);
+      background: rgba(255, 255, 255, 0.08);
+      color: #edf7ee;
+      font: 600 12.5px/1 var(--font);
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .style-tab:hover { background: rgba(255, 255, 255, 0.16); }
+    .style-tab.is-active {
+      background: #ffffff;
+      color: #182b1c;
+      border-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    }
+    .lang-btn {
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: transparent;
+      color: #ffffff;
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+    }
+
+    /* Main Layout */
+    .page-wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 22px 20px 52px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Flow Explanation Strip */
+    .flow-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1.5px solid var(--green-border);
+      flex-wrap: wrap;
+    }
+    .flow-strip__steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .flow-step {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: #f2f7f3;
+      color: var(--muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .flow-step.is-active {
+      background: var(--green-soft);
+      border-color: var(--green-border);
+      color: var(--green-dark);
+    }
+    .flow-step b {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--green);
+      color: #ffffff;
+      font-size: 11px;
+    }
+    .flow-strip__desc {
+      font-size: 12.5px;
+      color: var(--muted);
+      max-width: 460px;
+    }
+
+    /* Interactive App Frame */
+    .frame {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      min-height: 640px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1.5px solid #dce6dd;
+      box-shadow: 0 18px 44px rgba(20, 46, 25, 0.08);
+    }
+    .frame-sidebar {
+      background: #ffffff;
+      border-right: 1px solid var(--line);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .frame-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 19px;
+      color: var(--green-dark);
+    }
+    .frame-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .frame-nav__btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1.5px solid #d5dfd7;
+      background: #ffffff;
+      color: var(--ink);
+      font: 600 13.5px/1 var(--font);
+      cursor: pointer;
+      text-align: left;
+    }
+    .frame-nav__btn.is-active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+    .frame-nav__hint {
+      font-size: 10.5px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: rgba(59, 129, 70, 0.12);
+      color: var(--green-dark);
+    }
+    .frame-nav__btn.is-active .frame-nav__hint {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+    .frame-sidebar__active-box {
+      margin-top: auto;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f5faf5;
+      border: 1px solid var(--green-border);
+      font-size: 12px;
+    }
+    .frame-sidebar__active-box small {
+      display: block;
+      color: var(--muted);
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+    .frame-sidebar__active-box strong {
+      display: block;
+      color: var(--green-dark);
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    .frame-main {
+      background: #fafafa;
+      padding: 22px 24px 32px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Common Course Picker (Learn Step 1) */
+    .learn-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .learn-head h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .learn-head p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .search-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1.5px solid #d8e3da;
+      background: #ffffff;
+      min-width: 240px;
+    }
+    .search-pill input {
+      border: 0;
+      outline: 0;
+      background: transparent;
+      font: 500 13px var(--font);
+      width: 100%;
+    }
+
+    /* ==================== STYLE A: GOOGLE CLASSROOM ==================== */
+    .cr-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .cr-card {
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1.5px solid #dfe8e0;
+      box-shadow: 0 4px 12px rgba(24, 52, 29, 0.05);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    }
+    .cr-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--green);
+      box-shadow: 0 12px 24px rgba(24, 52, 29, 0.11);
+    }
+    .cr-card__banner {
+      padding: 16px 16px 14px;
+      color: #ffffff;
+      min-height: 98px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cr-card__cat {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      opacity: 0.9;
+    }
+    .cr-card__title {
+      margin: 6px 0 0;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .cr-card__body {
+      padding: 13px 16px;
+      font-size: 12.5px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+    .cr-card__foot {
+      padding: 10px 14px;
+      border-top: 1px solid #edf3ee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .cr-mini-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      border: 1px solid #d5e4d7;
+      background: #f6faf6;
+      color: var(--green-dark);
+      font: 600 12px/1 var(--font);
+      cursor: pointer;
+    }
+    .cr-mini-btn--primary {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+    }
+
+    /* Classroom Inside Course (Stream / Lessons + Classwork / Quiz Group!) */
+    .cr-room-hero {
+      border-radius: 18px;
+      padding: 20px 22px;
+      color: #ffffff;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .cr-room-hero h2 { margin: 6px 0 4px; font-size: 22px; }
+    .cr-room-hero p { margin: 0; font-size: 13px; opacity: 0.9; }
+    .cr-tabs {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 2px solid #e3ece4;
+      padding-bottom: 0;
+    }
+    .cr-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 11px 16px;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      background: transparent;
+      color: var(--muted);
+      font: 700 13.5px/1 var(--font);
+      cursor: pointer;
+    }
+    .cr-tab.is-active {
+      color: var(--green-dark);
+      border-bottom-color: var(--green);
+    }
+    .cr-topic-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .cr-topic {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1.5px solid #e3ece4;
+    }
+    .cr-topic__left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cr-topic__icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: var(--green-soft);
+      color: var(--green);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .cr-topic strong { display: block; font-size: 14px; }
+    .cr-topic span { font-size: 12px; color: var(--muted); }
+
+    /* ==================== STYLE B: KAHOOT! COURSE QUIZ DECK ==================== */
+    .kh-shelf {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .kh-card {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      border-radius: 18px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1.5px solid #e0e8e1;
+      box-shadow: 0 6px 16px rgba(24, 52, 29, 0.06);
+      cursor: pointer;
+      transition: transform 140ms ease, border-color 140ms ease;
+    }
+    .kh-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--green);
+    }
+    .kh-card__cover {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: #ffffff;
+      padding: 12px;
+      text-align: center;
+    }
+    .kh-card__count {
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.34);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .kh-card__info {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .kh-card__title {
+      margin: 0;
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .kh-card__meta {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .kh-card__actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .kh-play-group {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .kh-mode-tile {
+      padding: 16px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 2px solid #dfe8e0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 140ms ease;
+    }
+    .kh-mode-tile:hover {
+      transform: translateY(-2px);
+      border-color: var(--green);
+      box-shadow: 0 10px 22px rgba(37, 87, 45, 0.1);
+    }
+    .kh-mode-tile--hero {
+      background: linear-gradient(145deg, #2b6534, #3f8b4b);
+      border-color: transparent;
+      color: #ffffff;
+    }
+    .kh-mode-tile--hero p { color: rgba(255, 255, 255, 0.88); }
+    .kh-mode-tile__icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(59, 129, 70, 0.12);
+      color: var(--green);
+      display: grid;
+      place-items: center;
+    }
+    .kh-mode-tile--hero .kh-mode-tile__icon {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+    }
+    .kh-mode-tile h4 { margin: 0; font-size: 15px; }
+    .kh-mode-tile p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    .kh-mode-tile--hero p { color: rgba(255, 255, 255, 0.92); }
+
+    /* ==================== STYLE C: LEARNINGHAUS LEARN-FIRST GROUP ==================== */
+    .lh-deck-box {
+      padding: 20px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1.5px solid var(--green-border);
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: center;
+    }
+    .lh-deck-preview {
+      padding: 20px;
+      border-radius: 16px;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .lh-quiz-group {
+      padding: 18px;
+      border-radius: 16px;
+      background: #f4faf5;
+      border: 1.5px dashed #8db893;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .lh-quiz-group__tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-dark);
+    }
+    .lh-quiz-group h3 { margin: 0; font-size: 17px; }
+    .lh-quiz-group p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    .lh-btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1.5px solid var(--green-border);
+      background: #ffffff;
+      color: var(--green-dark);
+      font: 700 13px/1 var(--font);
+      cursor: pointer;
+    }
+    .btn--green {
+      background: var(--green);
+      border-color: var(--green);
+      color: #ffffff;
+      box-shadow: 0 5px 14px rgba(59, 129, 70, 0.24);
+    }
+    .btn--green:hover { background: var(--green-dark); }
+    .btn:hover { border-color: var(--green); }
+
+    /* Stage Map Preview inside Frame */
+    .stage-mock {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1.5px solid #d5e4d7;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .stage-mock__bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 16px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    .stage-mock__course {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .stage-mock__body {
+      flex: 1;
+      min-height: 360px;
+      background: linear-gradient(180deg, #daf0d7 0%, #f5efda 52%, #ebe1c5 100%);
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .mock-node {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--green);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      font-weight: 700;
+      box-shadow: 0 6px 0 #265f30;
+    }
+    .mock-node--r { transform: translateX(58px); }
+    .mock-node--l { transform: translateX(-58px); }
+
+    /* Learn-First Gate (if clicking Quiz before picking a lesson) */
+    .gate-card {
+      margin: auto;
+      max-width: 460px;
+      padding: 28px 24px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 1.5px dashed #9fc4a4;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .gate-card__icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: var(--green-soft);
+      color: var(--green);
+      display: grid;
+      place-items: center;
+    }
+    .gate-card h3 { margin: 0; font-size: 18px; }
+    .gate-card p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    /* Comparison Cards */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .compare-card {
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1.5px solid #e1eae2;
+      cursor: pointer;
+    }
+    .compare-card.is-active {
+      border-color: var(--green);
+      background: #f5fbf6;
+      box-shadow: 0 8px 20px rgba(59, 129, 70, 0.1);
+    }
+    .compare-card h4 { margin: 0 0 6px; font-size: 14.5px; color: var(--green-dark); }
+    .compare-card p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    @media (max-width: 960px) {
+      .frame { grid-template-columns: 1fr; }
+      .frame-sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+      .cr-grid, .kh-shelf, .kh-play-group, .lh-deck-box, .compare-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="draft-bar">
+    <div class="draft-bar__title">
+      <span class="draft-bar__pill">3 UX DRAFTS</span>
+      <span data-i18n-en="Learn First → Course Quiz Group → Stage Map" data-i18n-th="เลือกบทเรียนใน Learn ก่อน → กลุ่มปุ่มเข้าหน้า Quiz ของบทเรียนนั้น → แผนที่ด่าน">เลือกบทเรียนใน Learn ก่อน → กลุ่มปุ่มเข้าหน้า Quiz ของบทเรียนนั้น → แผนที่ด่าน</span>
+    </div>
+    <div class="style-tabs" role="tablist">
+      <button class="style-tab is-active" type="button" data-style="classroom">A. Google Classroom</button>
+      <button class="style-tab" type="button" data-style="kahoot">B. Kahoot! Deck</button>
+      <button class="style-tab" type="button" data-style="learninghaus">C. LearningHaus Group</button>
+      <button class="lang-btn" type="button" data-lang-btn>EN / ไทย</button>
+    </div>
+  </header>
+
+  <main class="page-wrap">
+    <!-- Comparison Selector -->
+    <section class="compare-grid" data-compare-grid></section>
+
+    <!-- Flow Breadcrumb -->
+    <div class="flow-strip">
+      <div class="flow-strip__steps" data-flow-steps></div>
+      <div class="flow-strip__desc" data-flow-desc></div>
+    </div>
+
+    <!-- Interactive Prototype Frame -->
+    <div class="frame">
+      <aside class="frame-sidebar">
+        <div class="frame-brand">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.72.23 6.5 2.23A9.04 9.04 0 0 1 12 5Z"/></svg>
+          <span>LearningHaus</span>
+        </div>
+        <nav class="frame-nav">
+          <button class="frame-nav__btn" type="button" data-nav="learn">
+            <span>Learn</span>
+            <span class="frame-nav__hint" data-i18n-en="Pick course" data-i18n-th="เลือกคอร์ส">เลือกคอร์ส</span>
+          </button>
+          <button class="frame-nav__btn" type="button" data-nav="quiz">
+            <span>Quiz</span>
+            <span class="frame-nav__hint" data-nav-quiz-hint></span>
+          </button>
+        </nav>
+
+        <div class="frame-sidebar__active-box" data-selected-box></div>
+      </aside>
+
+      <section class="frame-main" data-frame-main></section>
+    </div>
+  </main>
+
+  <script>
+    let lang = "th";
+    let activeStyle = "classroom"; // classroom | kahoot | learninghaus
+    let activeStep = "learn-list"; // learn-list | course-room | quiz-map | quiz-gate
+    let selectedCourseId = null; // null until user picks a course in Learn!
+    let classroomTab = "quiz"; // lessons | quiz
+    let searchQuery = "";
+
+    const courses = [
+      { id: "eu-ai-act", title: "EU AI Act: Foundations to Enforcement", catEn: "AI Law", catTh: "กฎหมาย AI", creator: "LearningHaus Official", chapters: 8, cleared: 10, total: 80, bg: "linear-gradient(135deg,#25542c,#3b8146)", chList: ["Foundations & Scope", "Prohibited AI Practices", "High-Risk AI Systems", "Transparency Rules"] },
+      { id: "ai-literacy-work", title: "AI Literacy in the Workplace", catEn: "Practical Use", catTh: "การใช้งานจริง", creator: "LearningHaus Official", chapters: 5, cleared: 18, total: 50, bg: "linear-gradient(135deg,#1f5545,#3a8c72)", chList: ["What is AI Literacy?", "Safe Prompting & Data Hygiene", "Spotting Hallucinations", "Human-in-the-Loop Reviews"] },
+      { id: "deepfake-transparency", title: "Deepfakes & Synthetic Media Rules", catEn: "Ethics & Safety", catTh: "จริยธรรม & ความปลอดภัย", creator: "KittyCipher", chapters: 4, cleared: 20, total: 40, bg: "linear-gradient(135deg,#243b59,#3d6999)", chList: ["Recognizing Synthetic Media", "Disclosure & Watermarking", "Artistic Exceptions", "Voice & Likeness Rights"] },
+      { id: "gdpr-meets-ai", title: "PDPA / GDPR Meets Generative AI", catEn: "AI Law", catTh: "กฎหมาย AI", creator: "LawWhisker", chapters: 6, cleared: 6, total: 60, bg: "linear-gradient(135deg,#4f3673,#7b52ab)", chList: ["Personal Data in Prompts", "Lawful Basis for Training", "Data Subject Rights", "Vendor Contracts"] },
+      { id: "ethical-prompt-studio", title: "Responsible Prompt Design", catEn: "Practical Use", catTh: "การใช้งานจริง", creator: "SakuraPaws", chapters: 3, cleared: 0, total: 30, bg: "linear-gradient(135deg,#8a4f23,#c77c3b)", chList: ["Structuring Clear Prompts", "Reducing Bias", "Verification & Sources"] },
+      { id: "ai-risk-clinic", title: "Quick Risk Assessment Lab", catEn: "Ethics & Safety", catTh: "จริยธรรม & ความปลอดภัย", creator: "RoyalSiamese", chapters: 8, cleared: 24, total: 80, bg: "linear-gradient(135deg,#6e2638,#a83c55)", chList: ["Unacceptable vs High-Risk", "Hiring & HR Screening", "Education & Grading", "Healthcare Triage"] }
+    ];
+
+    const t = (en, th) => (lang === "th" ? th : en);
+    const getCourse = () => courses.find((c) => c.id === selectedCourseId) || null;
+
+    const renderCompare = () => {
+      const items = [
+        {
+          id: "classroom",
+          titleEn: "A. Google Classroom Style",
+          titleTh: "แบบ A · สไตล์ Google Classroom",
+          descEn: "Pick a class card in Learn → opens Course Room with 2 clear tabs: Lessons & Quizzes (grouped by Chapter) + 1-click Stage Map button.",
+          descTh: "เลือกการ์ดคอร์สในหน้า Learn → เข้าห้องเรียนที่มี 2 แท็บชัดเจน: บทเรียน กับ ควิสของคอร์สนี้ (แยกเป็นกลุ่มตาม Chapter) พร้อมปุ่มเข้าแผนที่ด่าน"
+        },
+        {
+          id: "kahoot",
+          titleEn: "B. Kahoot! Course Deck Style",
+          titleTh: "แบบ B · สไตล์ Kahoot! Deck",
+          descEn: "Pick a course in Learn → shows a bold Kahoot-style Quiz Group panel with Adventure Stage Map, Quick Practice, and Chapter Exam tiles.",
+          descTh: "เลือกคอร์สในหน้า Learn → แสดงกลุ่มโหมดควิสแบบ Kahoot! (แผนที่ด่านผจญภัย, ฝึกไว, ข้อสอบปลายบท) ของคอร์สนั้นโดยเฉพาะ"
+        },
+        {
+          id: "learninghaus",
+          titleEn: "C. LearningHaus Learn-First Group (Simplest)",
+          titleTh: "แบบ C · กลุ่มปุ่มในหน้า Learn เดิม (เรียบง่ายสุด)",
+          descEn: "Fits our current Chapter Deck cleanly: pick a course in Learn → dedicated Quiz Group box right next to the lesson deck enters that course's Stage Map!",
+          descTh: "เข้ากับหน้า Chapter Deck เดิมมากที่สุด: เลือกคอร์สใน Learn → มีกล่องกลุ่มปุ่ม 'เข้าหน้าควิสของบทเรียนนี้' ชัดเจน และหน้า Quiz เหลือแค่แถบชื่อคอร์ส 1 บรรทัด"
+        }
+      ];
+      document.querySelector("[data-compare-grid]").innerHTML = items.map((item) => `
+        <div class="compare-card${activeStyle === item.id ? " is-active" : ""}" data-style="${item.id}">
+          <h4>${t(item.titleEn, item.titleTh)}</h4>
+          <p>${t(item.descEn, item.descTh)}</p>
+        </div>
+      `).join("");
+    };
+
+    const renderTopMeta = () => {
+      document.querySelectorAll("[data-i18n-en]").forEach((el) => {
+        el.textContent = lang === "th" ? el.dataset.i18nTh : el.dataset.i18nEn;
+      });
+      document.querySelectorAll(".style-tab").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.style === activeStyle);
+      });
+
+      const steps = [
+        ["learn-list", t("1. Select Course in Learn", "1. เลือกคอร์สในหน้า Learn")],
+        ["course-room", t("2. Course Quiz Group", "2. กลุ่มเข้าหน้า Quiz ของบทเรียน")],
+        ["quiz-map", t("3. Course Stage Map", "3. แผนที่ด่านของคอร์สนั้น")]
+      ];
+      document.querySelector("[data-flow-steps]").innerHTML = steps.map(([id, label], i) => `
+        ${i > 0 ? `<span style="color:#95a899">→</span>` : ""}
+        <button class="flow-step${activeStep === id ? " is-active" : ""}" type="button" data-jump-step="${id}">
+          <b>${i + 1}</b><span>${label.replace(/^\d+\.\s*/, "")}</span>
+        </button>
+      `).join("");
+
+      const desc = activeStep === "learn-list"
+        ? t("Click any course below to enter its workspace first.", "คลิกเลือกคอร์สใดก็ได้ด้านล่างเพื่อเข้าสู่หน้าบทเรียนก่อน")
+        : activeStep === "course-room"
+          ? t("Inside the selected course, use the Quiz Group to launch that course's Stage Map.", "เมื่ออยู่ในคอร์สแล้ว จะมีกลุ่มปุ่มสำหรับเข้าหน้า Quiz ของบทเรียนนี้โดยตรง")
+          : activeStep === "quiz-gate"
+            ? t("Clicking Quiz without selecting a course prompts you to pick one in Learn first.", "ถ้ากดเมนู Quiz โดยยังไม่ได้เลือกคอร์ส ระบบจะพาไปเลือกบทเรียนใน Learn ก่อน")
+            : t("Stage Map is locked cleanly to the selected course—zero crowded course bar!", "แผนที่ด่านแสดงเฉพาะคอร์สที่เลือกไว้ โล่ง สะอาด ไม่มีแถบปุ่มคอร์สล้นด้านบนแล้ว!");
+      document.querySelector("[data-flow-desc]").textContent = desc;
+
+      // Sidebar state
+      const isQuizSide = activeStep === "quiz-map" || activeStep === "quiz-gate";
+      document.querySelector('[data-nav="learn"]').classList.toggle("is-active", !isQuizSide);
+      document.querySelector('[data-nav="quiz"]').classList.toggle("is-active", isQuizSide);
+      const c = getCourse();
+      document.querySelector("[data-nav-quiz-hint]").textContent = c
+        ? t("Ready", "พร้อมทำ")
+        : t("Pick in Learn", "เลือกใน Learn");
+
+      document.querySelector("[data-selected-box]").innerHTML = c
+        ? `<small>${t("Active Course", "บทเรียนที่เลือกอยู่")}</small><strong>${c.title}</strong><span style="color:#607264;display:block;margin-top:4px">${c.chapters} ${t("Chapters", "บท")} · ${c.cleared}/${c.total} ${t("stages", "ด่าน")}</span>`
+        : `<small>${t("Active Course", "บทเรียนที่เลือกอยู่")}</small><strong style="color:#859789">${t("None selected yet", "ยังไม่ได้เลือกบทเรียน")}</strong><span style="color:#607264;display:block;margin-top:4px">${t("Choose a course in Learn first.", "เลือกบทเรียนในหน้า Learn ก่อน")}</span>`;
+    };
+
+    const renderLearnList = () => {
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = courses.filter((c) => !q || c.title.toLowerCase().includes(q) || c.catEn.toLowerCase().includes(q) || c.catTh.toLowerCase().includes(q));
+
+      if (activeStyle === "kahoot") {
+        return `
+          <div class="learn-head">
+            <div>
+              <h2>${t("Learn — Select a Course Deck", "หน้า Learn — เลือกบทเรียนที่ต้องการ")}</h2>
+              <p>${t("Choose a course to view its lessons and Quiz Play Group.", "เลือกคอร์สเพื่อดูบทเรียนและกลุ่มเข้าทำควิสของคอร์สนั้น")}</p>
+            </div>
+            <label class="search-pill">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#607264" stroke-width="2.1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" data-search value="${searchQuery}" placeholder="${t("Search courses...", "ค้นหาคอร์ส...")}">
+            </label>
+          </div>
+          <div class="kh-shelf">
+            ${filtered.map((c) => `
+              <article class="kh-card" data-pick-course="${c.id}">
+                <div class="kh-card__cover" style="background:${c.bg}">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                  <span class="kh-card__count">${c.chapters} ${t("Ch.", "บท")}</span>
+                </div>
+                <div class="kh-card__info">
+                  <div>
+                    <span class="cr-card__cat" style="color:#3b8146">${t(c.catEn, c.catTh)}</span>
+                    <h3 class="kh-card__title">${c.title}</h3>
+                    <div class="kh-card__meta">${c.creator} · ${c.cleared}/${c.total} ${t("stages", "ด่าน")}</div>
+                  </div>
+                  <div class="kh-card__actions">
+                    <span class="cr-mini-btn cr-mini-btn--primary">${t("Open Course →", "เปิดบทเรียน →")}</span>
+                  </div>
+                </div>
+              </article>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      // Classroom & LearningHaus card grid
+      return `
+        <div class="learn-head">
+          <div>
+            <h2>${t("Learn — Your Courses", "หน้า Learn — เลือกบทเรียนของคุณ")}</h2>
+            <p>${t("Select a course first; inside you'll find both Lessons and that course's Quiz Group.", "เลือกคอร์สที่ต้องการก่อน ด้านในจะมีทั้งเนื้อหาบทเรียนและกลุ่มปุ่มเข้าสู่หน้า Quiz ของบทเรียนนั้น")}</p>
+          </div>
+          <label class="search-pill">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#607264" stroke-width="2.1"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" data-search value="${searchQuery}" placeholder="${t("Search courses...", "ค้นหาคอร์ส...")}">
+          </label>
+        </div>
+        <div class="cr-grid">
+          ${filtered.map((c) => `
+            <article class="cr-card" data-pick-course="${c.id}">
+              <div class="cr-card__banner" style="background:${c.bg}">
+                <span class="cr-card__cat">${t(c.catEn, c.catTh)}</span>
+                <h3 class="cr-card__title">${c.title}</h3>
+              </div>
+              <div class="cr-card__body">
+                <div>${c.creator}</div>
+                <div><strong>${c.chapters} ${t("Chapters", "บทเรียน")}</strong> · ${t("Quiz progress", "ทำควิสแล้ว")} ${Math.round((c.cleared / c.total) * 100)}%</div>
+              </div>
+              <div class="cr-card__foot">
+                <span class="cr-mini-btn">${t("Lessons", "บทเรียน")}</span>
+                <span class="cr-mini-btn cr-mini-btn--primary">${t("Open →", "เข้าคอร์ส →")}</span>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      `;
+    };
+
+    const renderCourseRoom = () => {
+      const c = getCourse() || courses[0];
+      selectedCourseId = c.id;
+
+      if (activeStyle === "classroom") {
+        return `
+          <div>
+            <button class="btn" type="button" data-jump-step="learn-list">← ${t("Back to All Courses", "กลับไปเลือกคอร์สอื่น")}</button>
+          </div>
+          <div class="cr-room-hero" style="background:${c.bg}">
+            <div>
+              <span class="cr-card__cat">${t(c.catEn, c.catTh)} · ${c.creator}</span>
+              <h2>${c.title}</h2>
+              <p>${t(`${c.chapters} Chapters · ${c.cleared}/${c.total} Quiz Stages Completed`, `${c.chapters} บทเรียน · ผ่านควิสแล้ว ${c.cleared}/${c.total} ด่าน`)}</p>
+            </div>
+            <button class="btn" type="button" data-enter-quiz style="background:#ffffff;color:#1d3b22;border-color:#ffffff">
+              ${t("Open Stage Map →", "เข้าสู่แผนที่ด่าน Quiz →")}
+            </button>
+          </div>
+
+          <div class="cr-tabs">
+            <button class="cr-tab${classroomTab === "lessons" ? " is-active" : ""}" type="button" data-cr-tab="lessons">
+              ${t("Lessons (Videos)", "บทเรียน (วิดีโอ)")}
+            </button>
+            <button class="cr-tab${classroomTab === "quiz" ? " is-active" : ""}" type="button" data-cr-tab="quiz">
+              ${t("Quiz Group (Classwork)", "กลุ่มควิสของบทเรียนนี้")}
+            </button>
+          </div>
+
+          <div class="cr-topic-list">
+            ${c.chList.map((chTitle, idx) => `
+              <div class="cr-topic">
+                <div class="cr-topic__left">
+                  <div class="cr-topic__icon"><strong>${idx + 1}</strong></div>
+                  <div>
+                    <strong>Chapter ${idx + 1} — ${chTitle}</strong>
+                    <span>${classroomTab === "quiz"
+                      ? t("10 Stages · Quick Check, 8 Mini-Games & Final Exam", "10 ด่าน · ควิซเริ่มต้น, 8 มินิเกม และข้อสอบปลายบท")
+                      : t("Video Lesson & Interactive Notes", "วิดีโอบทเรียนและโน้ตสรุป")}</span>
+                  </div>
+                </div>
+                ${classroomTab === "quiz"
+                  ? `<button class="btn btn--green" type="button" data-enter-quiz>${t("Go to Quiz Map", "ไปทำควิส")}</button>`
+                  : `<button class="btn" type="button" onclick="alert('Opens Chapter ${idx + 1} Lesson Video')">${t("Watch Lesson", "เรียนบทนี้")}</button>`}
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }
+
+      if (activeStyle === "kahoot") {
+        return `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <button class="btn" type="button" data-jump-step="learn-list">← ${t("Back to Learn", "กลับหน้า Learn")}</button>
+            <span style="font-size:13px;font-weight:700;color:#3b8146">${c.title}</span>
+          </div>
+
+          <div class="cr-room-hero" style="background:${c.bg}">
+            <div>
+              <span class="cr-card__cat">${t("COURSE QUIZ GROUP · KAHOOT STYLE", "กลุ่มเข้าเล่นควิสของบทเรียน · สไตล์ Kahoot!")}</span>
+              <h2>${c.title}</h2>
+              <p>${t("Choose how you want to quiz on this course:", "เลือกรูปแบบการทำควิสของบทเรียนนี้ได้เลย:")}</p>
+            </div>
+          </div>
+
+          <div class="kh-play-group">
+            <article class="kh-mode-tile kh-mode-tile--hero" data-enter-quiz>
+              <div class="kh-mode-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              </div>
+              <h4>${t("Adventure Stage Map", "แผนที่ด่านผจญภัย (หลัก)")}</h4>
+              <p>${t(`Play all ${c.chapters} chapters with your Pixel Cat, mini-games & leaderboard.`, `ลุยด่านครบ ${c.chapters} บทพร้อมแมว Pixel มินิเกม และ Leaderboard`)}</p>
+              <strong style="margin-top:auto;font-size:13px">${t("Enter Quiz Map →", "เข้าแผนที่ด่าน →")}</strong>
+            </article>
+
+            <article class="kh-mode-tile" data-enter-quiz>
+              <div class="kh-mode-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>
+              </div>
+              <h4>${t("Quick Review Sprint", "ทบทวนไว (Quick Check)")}</h4>
+              <p>${t("Jump straight into unlocked stages of this course for fast XP practice.", "เข้าด่านควิซของคอร์สนี้ทันทีเพื่อฝึกความไวและเก็บคะแนน")}</p>
+              <strong style="margin-top:auto;font-size:13px;color:#3b8146">${t("Start Sprint →", "เริ่มฝึกไว →")}</strong>
+            </article>
+
+            <article class="kh-mode-tile" data-enter-quiz>
+              <div class="kh-mode-tile__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+              </div>
+              <h4>${t("Course Leaderboard", "อันดับและข้อสอบปลายบท")}</h4>
+              <p>${t("Challenge Chapter Final Exams and compare scores with friends.", "ท้าทายข้อสอบปลายบทและดูคะแนนบน Leaderboard ของคอร์สนี้")}</p>
+              <strong style="margin-top:auto;font-size:13px;color:#3b8146">${t("View Stages →", "ดูด่านสอบ →")}</strong>
+            </article>
+          </div>
+        `;
+      }
+
+      // Style C: LearningHaus Learn-First Group (Fits directly into current Learn Chapter Deck!)
+      return `
+        <div>
+          <button class="btn" type="button" data-jump-step="learn-list">← ${t("Back to Courses", "กลับไปเลือกคอร์ส")}</button>
+        </div>
+        <div class="lh-deck-box">
+          <div class="lh-deck-preview" style="background:${c.bg}">
+            <span class="cr-card__cat">${t("SELECTED LESSON COURSE", "บทเรียนที่เลือกในหน้า Learn")}</span>
+            <h2 style="margin:0;font-size:21px">${c.title}</h2>
+            <p style="margin:0;font-size:13px;opacity:0.9">${t(`${c.chapters} Chapters · Study lessons here with chapter cards.`, `มีทั้งหมด ${c.chapters} บทเรียน · เลือกการ์ด Chapter เพื่อดูวิดีโอบทเรียนได้ที่นี่`)}</p>
+            <div class="lh-btn-row" style="margin-top:8px">
+              <button class="btn" type="button" onclick="alert('Starts Chapter 1 Lesson')" style="background:#ffffff;color:#1e3a23;border-color:#ffffff">
+                ${t("Start Lesson", "เริ่มเรียนบทเรียน")}
+              </button>
+            </div>
+          </div>
+
+          <div class="lh-quiz-group">
+            <span class="lh-quiz-group__tag">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+              ${t("QUIZ ACCESS GROUP", "กลุ่มเข้าสู่หน้า Quiz ของบทเรียนนี้")}
+            </span>
+            <h3>${t("Ready to test this course?", "พร้อมทำควิสของบทเรียนนี้หรือยัง?")}</h3>
+            <p>${t(`Progress: ${c.cleared} / ${c.total} stages cleared (${Math.round((c.cleared / c.total) * 100)}%). Entering Quiz opens the Stage Map directly for "${c.title}".`, `ความคืบหน้า: ผ่านแล้ว ${c.cleared} / ${c.total} ด่าน (${Math.round((c.cleared / c.total) * 100)}%) กดปุ่มด้านล่างเพื่อเข้าสู่หน้าแผนที่ด่านของคอร์สนี้โดยตรง`)}</p>
+            <div class="lh-btn-row">
+              <button class="btn btn--green" type="button" data-enter-quiz>
+                ${t("Enter Course Quiz Map →", "เข้าสู่หน้า Quiz ของบทเรียนนี้ →")}
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    };
+
+    const renderQuizMap = () => {
+      const c = getCourse();
+      if (!c) {
+        return renderQuizGate();
+      }
+      return `
+        <div class="stage-mock">
+          <div class="stage-mock__bar">
+            <button class="btn" type="button" data-jump-step="course-room">
+              ← ${t("Back to Course (Learn)", "กลับหน้าบทเรียน")}
+            </button>
+            <span class="stage-mock__course">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b8146" stroke-width="2.2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>${c.title}</span>
+            </span>
+            <button class="btn" type="button" data-jump-step="learn-list">
+              ${t("Change Course", "เปลี่ยนบทเรียน")}
+            </button>
+          </div>
+          <div class="stage-mock__body">
+            <div style="padding:8px 16px;border-radius:999px;background:rgba(255,255,255,0.9);font-size:12.5px;font-weight:700;color:#2c6435">
+              ${c.title} · Chapter 1 — ${c.chList[0]} (${c.chapters} ${t("Chapters", "บท")})
+            </div>
+            <div class="mock-node">1</div>
+            <div class="mock-node mock-node--r">2</div>
+            <div class="mock-node">3</div>
+            <div class="mock-node mock-node--l">4</div>
+          </div>
+        </div>
+      `;
+    };
+
+    const renderQuizGate = () => `
+      <div class="gate-card">
+        <div class="gate-card__icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </div>
+        <h3>${t("Select a Lesson Course in Learn First", "เลือกบทเรียนในหน้า Learn ก่อนเข้าทำ Quiz")}</h3>
+        <p>${t("Each course has its own Quiz Stage Map and mini-games. Pick a course from the Learn page first, then use its Quiz Group button to jump straight into its stages!", "แต่ละบทเรียนจะมีแผนที่ด่านและมินิเกมแยกกัน กรุณาเลือกคอร์สที่ต้องการจากหน้า Learn ก่อน แล้วกดปุ่มเข้าหน้า Quiz ภายในคอร์สนั้นได้เลยครับ")}</p>
+        <button class="btn btn--green" type="button" data-jump-step="learn-list">
+          ${t("Go to Learn & Select a Course →", "ไปหน้า Learn เพื่อเลือกบทเรียน →")}
+        </button>
+      </div>
+    `;
+
+    const render = () => {
+      renderCompare();
+      renderTopMeta();
+      const host = document.querySelector("[data-frame-main]");
+      if (activeStep === "learn-list") host.innerHTML = renderLearnList();
+      else if (activeStep === "course-room") host.innerHTML = renderCourseRoom();
+      else if (activeStep === "quiz-gate") host.innerHTML = renderQuizGate();
+      else host.innerHTML = renderQuizMap();
+    };
+
+    document.addEventListener("click", (e) => {
+      const styleBtn = e.target.closest("[data-style]");
+      if (styleBtn) {
+        activeStyle = styleBtn.dataset.style;
+        render();
+        return;
+      }
+      if (e.target.closest("[data-lang-btn]")) {
+        lang = lang === "th" ? "en" : "th";
+        render();
+        return;
+      }
+      const navBtn = e.target.closest("[data-nav]");
+      if (navBtn) {
+        if (navBtn.dataset.nav === "learn") {
+          activeStep = selectedCourseId ? "course-room" : "learn-list";
+        } else {
+          activeStep = selectedCourseId ? "quiz-map" : "quiz-gate";
+        }
+        render();
+        return;
+      }
+      const pick = e.target.closest("[data-pick-course]");
+      if (pick) {
+        selectedCourseId = pick.dataset.pickCourse;
+        activeStep = "course-room";
+        render();
+        return;
+      }
+      if (e.target.closest("[data-enter-quiz]")) {
+        if (!selectedCourseId) selectedCourseId = courses[0].id;
+        activeStep = "quiz-map";
+        render();
+        return;
+      }
+      const jump = e.target.closest("[data-jump-step]");
+      if (jump) {
+        const next = jump.dataset.jumpStep;
+        if ((next === "course-room" || next === "quiz-map") && !selectedCourseId) {
+          selectedCourseId = courses[0].id;
+        }
+        activeStep = next;
+        render();
+        return;
+      }
+      const crTab = e.target.closest("[data-cr-tab]");
+      if (crTab) {
+        classroomTab = crTab.dataset.crTab;
+        render();
+      }
+    });
+
+    document.addEventListener("input", (e) => {
+      if (e.target.matches("[data-search]")) {
+        searchQuery = e.target.value;
+        render();
+        const el = document.querySelector("[data-search]");
+        if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

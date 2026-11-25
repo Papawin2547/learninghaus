@@ -1,0 +1,17 @@
+{
+  "name": "learninghaus",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test:social": "node --test server/social.test.mjs",
+    "test:achievements": "node --test server/achievement.test.mjs",
+    "start": "node server/index.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

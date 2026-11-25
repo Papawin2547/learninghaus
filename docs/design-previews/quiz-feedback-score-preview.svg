@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title desc">
+  <title id="title">LearningHaus quiz feedback preview</title>
+  <desc id="desc">Wrong choices disappear after a red flash and shake, correct answers flash green, and a stage result without level-up shows only EXP.</desc>
+  <defs>
+    <linearGradient id="bg" x2="0" y2="1"><stop stop-color="#eef6ee"/><stop offset="1" stop-color="#fbfcfa"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="8" stdDeviation="13" flood-color="#18311d" flood-opacity=".12"/></filter>
+  </defs>
+  <rect width="1440" height="900" fill="#f1f5f1"/>
+  <text x="720" y="48" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="700" letter-spacing="3" fill="#6b806b">LEARNINGHAUS · QUIZ FEEDBACK</text>
+  <g transform="translate(40 78)">
+    <rect width="660" height="770" rx="22" fill="url(#bg)" stroke="#e1e9df" filter="url(#shadow)"/>
+    <rect x="24" y="24" width="612" height="722" rx="18" fill="#fff" stroke="#e56a61" stroke-width="3"/>
+    <text x="58" y="72" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="600" fill="#68736a">Chapter 1 · Stage 1 · Question 7 / 10</text>
+    <text x="602" y="72" text-anchor="end" font-family="Inter,Arial,sans-serif" font-size="15" font-weight="600" fill="#667269">18s</text>
+    <rect x="58" y="89" width="544" height="9" rx="5" fill="#e4e9e4"/><rect x="58" y="89" width="327" height="9" rx="5" fill="#91ad77"/>
+    <text x="330" y="157" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="23" font-weight="600" fill="#315f37">Who does the EU AI Act apply to?</text>
+    <text x="330" y="187" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="14" fill="#708075">Wrong pick disappears. Choose again before time runs out.</text>
+    <g font-family="Inter,Arial,sans-serif" font-size="16" text-anchor="middle">
+      <rect x="58" y="220" width="254" height="116" rx="15" fill="#fff" stroke="#e4eae3"/><text x="185" y="270" fill="#2c332e">Only businesses in Brussels</text><text x="185" y="296" font-size="13" fill="#e3655e">(removed after wrong pick)</text>
+      <rect x="328" y="220" width="274" height="116" rx="15" fill="#eef8ef" stroke="#73b67b" stroke-width="2"/><text x="465" y="268" font-weight="600" fill="#294a2e">Providers and Deployers</text><text x="465" y="294" font-size="14" fill="#294a2e">using AI professionally</text>
+      <rect x="58" y="356" width="254" height="116" rx="15" fill="#fff" stroke="#e4eae3"/><text x="185" y="421" fill="#2c332e">Personal use only</text>
+      <rect x="328" y="356" width="274" height="116" rx="15" fill="#fff" stroke="#e4eae3"/><text x="465" y="409" fill="#2c332e">Every business outside</text><text x="465" y="435" fill="#2c332e">the EU automatically</text>
+    </g>
+    <rect x="112" y="535" width="436" height="58" rx="14" fill="#fff0ef" stroke="#efc1bd"/><text x="330" y="570" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="600" fill="#a53e38">Wrong → red flash + shake + remove option</text>
+    <rect x="112" y="610" width="436" height="58" rx="14" fill="#eef8ef" stroke="#b8ddbd"/><text x="330" y="645" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="14" font-weight="600" fill="#35663b">Correct → green screen flash</text>
+    <text x="330" y="713" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="12" fill="#7b867d">STAY ON THE QUESTION · NO EXPLANATION SCREEN</text>
+  </g>
+  <g transform="translate(740 78)">
+    <rect width="660" height="770" rx="22" fill="url(#bg)" stroke="#e1e9df" filter="url(#shadow)"/>
+    <rect x="24" y="24" width="612" height="722" rx="18" fill="#fff" stroke="#e7ece7"/>
+    <g transform="translate(93 145)">
+      <rect width="474" height="430" rx="22" fill="#fff" stroke="#e1e9df"/>
+      <circle cx="63" cy="63" r="21" fill="#e8f4e8"/><path d="m54 63 6 6 13-15" fill="none" stroke="#398346" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="102" y="54" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="700" letter-spacing="2" fill="#66834e">STAGE COMPLETE</text><text x="102" y="84" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="700" fill="#24372a">Your score</text>
+      <text x="237" y="201" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="76" font-weight="700" fill="#3c8146">7</text><text x="237" y="240" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="16" fill="#98a39a">out of 10 questions</text>
+      <text x="237" y="277" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="14" fill="#667269">Nice work — your reward is ready.</text>
+      <rect x="69" y="315" width="336" height="82" rx="16" fill="#fff9e6" stroke="#f0dfa1"/>
+      <text x="237" y="348" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="12" font-weight="600" fill="#69736a">EXP EARNED</text><text x="237" y="380" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="700" fill="#27352a">100 EXP</text>
+    </g>
+    <text x="330" y="633" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="14" fill="#667269">When Level does not increase, only EXP is shown.</text>
+    <rect x="196" y="673" width="268" height="52" rx="13" fill="#3c8146"/><text x="330" y="706" text-anchor="middle" font-family="Inter,Arial,sans-serif" font-size="16" font-weight="600" fill="#fff">Continue learning</text>
+  </g>
+</svg>
