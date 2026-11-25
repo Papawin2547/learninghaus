@@ -1448,7 +1448,11 @@ namespace LearningHausPartyArena {
                 </button>
                 ${
                   isHost
-                    ? `
+                    ? (() => {
+                        const humanPlayers = room.players.filter((p) => !p.isBot);
+                        const readyHumans = humanPlayers.filter((p) => p.ready).length;
+                        const allHumansReady = humanPlayers.length > 0 && readyHumans === humanPlayers.length;
+                        return `
                   <button type="button" class="learn-cr-btn" data-party-bots="${Math.min(50, botCount + 1)}" ${botCount >= 50 ? "disabled" : ""}>${t(`+1 Bot (${botCount}/50)`, `+1 บอท (${botCount}/50)`)}</button>
                   <button type="button" class="learn-cr-btn" data-party-bots="${Math.max(0, botCount - 1)}" ${botCount <= 0 ? "disabled" : ""}>${t("-1 Bot", "-1 บอท")}</button>
                   <span class="party-bot-setter">
@@ -1456,9 +1460,12 @@ namespace LearningHausPartyArena {
                     <button type="button" class="learn-cr-btn" data-party-bot-apply>${t("Set Bots", "ตั้งบอท")}</button>
                   </span>
                   <button type="button" class="learn-cr-btn" data-party-bots="0" ${botCount <= 0 ? "disabled" : ""}>${t("Clear All Bots", "ลบบอททั้งหมด")}</button>
-                  <button type="button" class="learn-cr-btn learn-cr-btn--primary" data-party-start>${t("Start Match →", "เริ่มเกมเลย →")}</button>
-                `
-                    : `<span class="party-waiting-tag">${t("Waiting for Host to start...", "รอหัวหน้าห้องกดเริ่มเกม...")}</span>`
+                  <button type="button" class="learn-cr-btn learn-cr-btn--primary" data-party-start ${!allHumansReady ? "disabled" : ""} title="${!allHumansReady ? t("All players must click Ready first", "ผู้เล่นทุกคนต้องกดพร้อมก่อนเริ่มเกม") : ""}">
+                    ${allHumansReady ? t("Start Match →", "เริ่มเกมเลย →") : t(`Waiting Ready (${readyHumans}/${humanPlayers.length})`, `รอกดพร้อม (${readyHumans}/${humanPlayers.length})`)}
+                  </button>
+                `;
+                      })()
+                    : `<span class="party-waiting-tag">${me?.ready ? t("Waiting for Host to start...", "รอหัวหน้าห้องกดเริ่มเกม...") : t("Press Ready so Host can start!", "กรุณากดพร้อมเพื่อให้หัวหน้าห้องเริ่มเกม")}</span>`
                 }
               </div>
             </div>

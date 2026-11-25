@@ -6581,7 +6581,18 @@ var LearningHausLearnHub;
             poolId: `pool-${idx}`
         }));
     };
-    const getAllCombined = () => [...myClassesState.customClasses, ...COURSES];
+    let sharedServerClasses = [];
+    const getAllCombined = () => {
+        const seen = new Set();
+        const out = [];
+        for (const c of [...myClassesState.customClasses, ...sharedServerClasses, ...COURSES]) {
+            if (!c || !c.id || seen.has(c.id))
+                continue;
+            seen.add(c.id);
+            out.push(c);
+        }
+        return out;
+    };
     LearningHausLearnHub.getCourseById = (courseId) => getAllCombined().find((c) => c.id === courseId) || null;
     LearningHausLearnHub.getClassRewardPool = (courseId) => {
         const course = LearningHausLearnHub.getCourseById(courseId);
@@ -6882,8 +6893,65 @@ var LearningHausLearnHub;
             el.textContent = String(count);
         });
     };
+    let classSyncTimer = null;
+    const syncTeachingClassesToServer = () => {
+        if (!window.LearningHausSocial?.isConnected?.())
+            return;
+        if (classSyncTimer !== null)
+            window.clearTimeout(classSyncTimer);
+        classSyncTimer = window.setTimeout(() => {
+            classSyncTimer = null;
+            const teaching = myClassesState.customClasses.filter((c) => c.isCustom && c.role === "teaching");
+            teaching.forEach((course) => {
+                void fetch("/api/classes", {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ course })
+                }).catch(() => {
+                    // Non-fatal sync error.
+                });
+            });
+        }, 250);
+    };
+    const loadSharedClassesFromServer = async () => {
+        if (!window.LearningHausSocial?.isConnected?.())
+            return;
+        try {
+            const res = await fetch("/api/classes", { credentials: "same-origin" });
+            if (!res.ok)
+                return;
+            const data = (await res.json().catch(() => ({})));
+            if (!Array.isArray(data.classes))
+                return;
+            const myUid = window.LearningHausSocial?.currentUserId?.() || 0;
+            const nextShared = [];
+            for (const raw of data.classes) {
+                if (!raw || !raw.id || !raw.classCode)
+                    continue;
+                const isMine = Boolean(myUid && raw.ownerUserId === myUid);
+                const normalized = {
+                    ...raw,
+                    isCustom: true,
+                    role: isMine ? "teaching" : "enrolled"
+                };
+                if (isMine && !myClassesState.customClasses.some((c) => c.id === normalized.id)) {
+                    myClassesState.customClasses.unshift(normalized);
+                }
+                else {
+                    nextShared.push(normalized);
+                }
+            }
+            sharedServerClasses = nextShared;
+            window.dispatchEvent(new CustomEvent("learninghaus:shared-classes-loaded"));
+        }
+        catch {
+            // Ignore offline errors.
+        }
+    };
     const saveMyClasses = () => {
         LearningHausAccountStorage.writeJson(MY_CLASSES_STORAGE_KEY, myClassesState);
+        syncTeachingClassesToServer();
     };
     const saveCustomDone = () => {
         LearningHausAccountStorage.writeJson(CUSTOM_DONE_STORAGE_KEY, customDoneMap);
@@ -10237,7 +10305,7 @@ var LearningHausLearnHub;
         joinForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
             const rawCode = joinInput?.value || "";
-            const result = LearningHausLearnHub.joinClassByCode(rawCode);
+            let result = LearningHausLearnHub.joinClassByCode(rawCode);
             if (result.ok) {
                 closeJoinModal();
                 setRoleFilter("all");
@@ -10245,6 +10313,37 @@ var LearningHausLearnHub;
                 renderCatalog();
                 showToast(result.message);
                 return;
+            }
+            // ตรวจสอบรหัสห้องเรียนจากเซิร์ฟเวอร์กลาง (กรณีเพื่อน/ผู้สอนสร้างจากเครื่องอื่น)
+            const normalizedCode = rawCode.trim().toUpperCase().replace(/\s+/g, "");
+            if (normalizedCode.length >= 4 && window.LearningHausSocial?.isConnected?.()) {
+                try {
+                    const res = await fetch(`/api/classes/by-code?code=${encodeURIComponent(normalizedCode)}`, { credentials: "same-origin" });
+                    if (res.ok) {
+                        const data = (await res.json().catch(() => ({})));
+                        if (data.course && data.course.id) {
+                            const myUid = window.LearningHausSocial?.currentUserId?.() || 0;
+                            const serverCourse = {
+                                ...data.course,
+                                isCustom: true,
+                                role: myUid && data.course.ownerUserId === myUid ? "teaching" : "enrolled"
+                            };
+                            sharedServerClasses = [serverCourse, ...sharedServerClasses.filter((c) => c.id !== serverCourse.id)];
+                            result = LearningHausLearnHub.joinClassByCode(normalizedCode);
+                            if (result.ok) {
+                                closeJoinModal();
+                                setRoleFilter("all");
+                                setSubview("classes");
+                                renderCatalog();
+                                showToast(result.message);
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch {
+                    // Fall through to Party Arena check.
+                }
             }
             const partyResult = await window.LearningHausPartyArena?.joinRoomByCode?.(rawCode);
             if (partyResult?.ok) {
@@ -10428,7 +10527,14 @@ var LearningHausLearnHub;
             syncFavoriteButtons();
             renderMyClasses();
             renderCatalog();
+            void loadSharedClassesFromServer();
         });
+        window.addEventListener("learninghaus:shared-classes-loaded", () => {
+            syncFavoriteButtons();
+            renderMyClasses();
+            renderCatalog();
+        });
+        void loadSharedClassesFromServer();
         window.addEventListener("learninghaus:quest-updated", () => {
             syncFavoriteButtons();
             renderMyClasses();
@@ -26892,7 +26998,11 @@ var LearningHausPartyArena;
                   ${me?.ready ? `✓ ${t("Ready!", "พร้อมแล้ว!")}` : t("Ready Up", "กดพร้อม (Ready)")}
                 </button>
                 ${isHost
-                ? `
+                ? (() => {
+                    const humanPlayers = room.players.filter((p) => !p.isBot);
+                    const readyHumans = humanPlayers.filter((p) => p.ready).length;
+                    const allHumansReady = humanPlayers.length > 0 && readyHumans === humanPlayers.length;
+                    return `
                   <button type="button" class="learn-cr-btn" data-party-bots="${Math.min(50, botCount + 1)}" ${botCount >= 50 ? "disabled" : ""}>${t(`+1 Bot (${botCount}/50)`, `+1 บอท (${botCount}/50)`)}</button>
                   <button type="button" class="learn-cr-btn" data-party-bots="${Math.max(0, botCount - 1)}" ${botCount <= 0 ? "disabled" : ""}>${t("-1 Bot", "-1 บอท")}</button>
                   <span class="party-bot-setter">
@@ -26900,9 +27010,12 @@ var LearningHausPartyArena;
                     <button type="button" class="learn-cr-btn" data-party-bot-apply>${t("Set Bots", "ตั้งบอท")}</button>
                   </span>
                   <button type="button" class="learn-cr-btn" data-party-bots="0" ${botCount <= 0 ? "disabled" : ""}>${t("Clear All Bots", "ลบบอททั้งหมด")}</button>
-                  <button type="button" class="learn-cr-btn learn-cr-btn--primary" data-party-start>${t("Start Match →", "เริ่มเกมเลย →")}</button>
-                `
-                : `<span class="party-waiting-tag">${t("Waiting for Host to start...", "รอหัวหน้าห้องกดเริ่มเกม...")}</span>`}
+                  <button type="button" class="learn-cr-btn learn-cr-btn--primary" data-party-start ${!allHumansReady ? "disabled" : ""} title="${!allHumansReady ? t("All players must click Ready first", "ผู้เล่นทุกคนต้องกดพร้อมก่อนเริ่มเกม") : ""}">
+                    ${allHumansReady ? t("Start Match →", "เริ่มเกมเลย →") : t(`Waiting Ready (${readyHumans}/${humanPlayers.length})`, `รอกดพร้อม (${readyHumans}/${humanPlayers.length})`)}
+                  </button>
+                `;
+                })()
+                : `<span class="party-waiting-tag">${me?.ready ? t("Waiting for Host to start...", "รอหัวหน้าห้องกดเริ่มเกม...") : t("Press Ready so Host can start!", "กรุณากดพร้อมเพื่อให้หัวหน้าห้องเริ่มเกม")}</span>`}
               </div>
             </div>
             <div class="party-lobby-subrow">

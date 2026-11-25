@@ -449,7 +449,18 @@ namespace LearningHausLearnHub {
     }));
   };
 
-  const getAllCombined = (): CourseItem[] => [...myClassesState.customClasses, ...COURSES];
+  let sharedServerClasses: CourseItem[] = [];
+
+  const getAllCombined = (): CourseItem[] => {
+    const seen = new Set<string>();
+    const out: CourseItem[] = [];
+    for (const c of [...myClassesState.customClasses, ...sharedServerClasses, ...COURSES]) {
+      if (!c || !c.id || seen.has(c.id)) continue;
+      seen.add(c.id);
+      out.push(c);
+    }
+    return out;
+  };
 
   export const getCourseById = (courseId: string): CourseItem | null =>
     getAllCombined().find((c) => c.id === courseId) || null;
@@ -799,8 +810,59 @@ namespace LearningHausLearnHub {
     });
   };
 
+  let classSyncTimer: number | null = null;
+  const syncTeachingClassesToServer = (): void => {
+    if (!window.LearningHausSocial?.isConnected?.()) return;
+    if (classSyncTimer !== null) window.clearTimeout(classSyncTimer);
+    classSyncTimer = window.setTimeout(() => {
+      classSyncTimer = null;
+      const teaching = myClassesState.customClasses.filter((c) => c.isCustom && c.role === "teaching");
+      teaching.forEach((course) => {
+        void fetch("/api/classes", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ course })
+        }).catch(() => {
+          // Non-fatal sync error.
+        });
+      });
+    }, 250);
+  };
+
+  const loadSharedClassesFromServer = async (): Promise<void> => {
+    if (!window.LearningHausSocial?.isConnected?.()) return;
+    try {
+      const res = await fetch("/api/classes", { credentials: "same-origin" });
+      if (!res.ok) return;
+      const data = (await res.json().catch(() => ({}))) as { classes?: (CourseItem & { ownerUserId?: number })[] };
+      if (!Array.isArray(data.classes)) return;
+      const myUid = window.LearningHausSocial?.currentUserId?.() || 0;
+      const nextShared: CourseItem[] = [];
+      for (const raw of data.classes) {
+        if (!raw || !raw.id || !raw.classCode) continue;
+        const isMine = Boolean(myUid && raw.ownerUserId === myUid);
+        const normalized: CourseItem = {
+          ...raw,
+          isCustom: true,
+          role: isMine ? "teaching" : "enrolled"
+        };
+        if (isMine && !myClassesState.customClasses.some((c) => c.id === normalized.id)) {
+          myClassesState.customClasses.unshift(normalized);
+        } else {
+          nextShared.push(normalized);
+        }
+      }
+      sharedServerClasses = nextShared;
+      window.dispatchEvent(new CustomEvent("learninghaus:shared-classes-loaded"));
+    } catch {
+      // Ignore offline errors.
+    }
+  };
+
   const saveMyClasses = (): void => {
     LearningHausAccountStorage.writeJson(MY_CLASSES_STORAGE_KEY, myClassesState);
+    syncTeachingClassesToServer();
   };
 
   const saveCustomDone = (): void => {
@@ -4281,7 +4343,7 @@ namespace LearningHausLearnHub {
     joinForm?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const rawCode = joinInput?.value || "";
-      const result = joinClassByCode(rawCode);
+      let result = joinClassByCode(rawCode);
       if (result.ok) {
         closeJoinModal();
         setRoleFilter("all");
@@ -4289,6 +4351,36 @@ namespace LearningHausLearnHub {
         renderCatalog();
         showToast(result.message);
         return;
+      }
+      // ตรวจสอบรหัสห้องเรียนจากเซิร์ฟเวอร์กลาง (กรณีเพื่อน/ผู้สอนสร้างจากเครื่องอื่น)
+      const normalizedCode = rawCode.trim().toUpperCase().replace(/\s+/g, "");
+      if (normalizedCode.length >= 4 && window.LearningHausSocial?.isConnected?.()) {
+        try {
+          const res = await fetch(`/api/classes/by-code?code=${encodeURIComponent(normalizedCode)}`, { credentials: "same-origin" });
+          if (res.ok) {
+            const data = (await res.json().catch(() => ({}))) as { course?: CourseItem & { ownerUserId?: number } };
+            if (data.course && data.course.id) {
+              const myUid = window.LearningHausSocial?.currentUserId?.() || 0;
+              const serverCourse: CourseItem = {
+                ...data.course,
+                isCustom: true,
+                role: myUid && data.course.ownerUserId === myUid ? "teaching" : "enrolled"
+              };
+              sharedServerClasses = [serverCourse, ...sharedServerClasses.filter((c) => c.id !== serverCourse.id)];
+              result = joinClassByCode(normalizedCode);
+              if (result.ok) {
+                closeJoinModal();
+                setRoleFilter("all");
+                setSubview("classes");
+                renderCatalog();
+                showToast(result.message);
+                return;
+              }
+            }
+          }
+        } catch {
+          // Fall through to Party Arena check.
+        }
       }
       const partyResult = await window.LearningHausPartyArena?.joinRoomByCode?.(rawCode);
       if (partyResult?.ok) {
@@ -4476,7 +4568,15 @@ namespace LearningHausLearnHub {
       syncFavoriteButtons();
       renderMyClasses();
       renderCatalog();
+      void loadSharedClassesFromServer();
     });
+
+    window.addEventListener("learninghaus:shared-classes-loaded", () => {
+      syncFavoriteButtons();
+      renderMyClasses();
+      renderCatalog();
+    });
+    void loadSharedClassesFromServer();
 
     window.addEventListener("learninghaus:quest-updated", () => {
       syncFavoriteButtons();

@@ -244,6 +244,16 @@ db.exec(`
     completed_at TEXT NOT NULL
   );
   CREATE INDEX IF NOT EXISTS party_match_logs_by_time ON party_match_logs(completed_at DESC);
+  CREATE TABLE IF NOT EXISTS custom_classes (
+    course_id TEXT PRIMARY KEY,
+    class_code TEXT NOT NULL UNIQUE,
+    owner_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    owner_name TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+  CREATE INDEX IF NOT EXISTS custom_classes_by_code ON custom_classes(class_code);
 `);
 const userColumns = new Set(db.prepare('PRAGMA table_info(users)').all().map((column) => column.name));
 for (const [name, definition] of Object.entries({
@@ -966,6 +976,75 @@ async function api(req, res, url) {
   const user = currentUser(req);
   if (!user) return fail(res, 401, 'Sign in to use friends, chat and shared leaderboards.');
   if (url.pathname === '/api/me' && method === 'GET') return json(res, 200, { user: accountUser(user) });
+  if (url.pathname === '/api/classes' && method === 'GET') {
+    const rows = db.prepare('SELECT course_id, class_code, owner_user_id, owner_name, title, payload_json, updated_at FROM custom_classes ORDER BY updated_at DESC LIMIT 200').all();
+    const classes = [];
+    for (const row of rows) {
+      try {
+        const parsed = JSON.parse(row.payload_json);
+        if (parsed && typeof parsed === 'object') {
+          classes.push({
+            ...parsed,
+            id: row.course_id,
+            classCode: row.class_code,
+            title: row.title,
+            creator: row.owner_name || parsed.creator || 'Creator',
+            ownerUserId: row.owner_user_id
+          });
+        }
+      } catch { /* ignore invalid row */ }
+    }
+    return json(res, 200, { classes });
+  }
+  if (url.pathname === '/api/classes/by-code' && method === 'GET') {
+    const code = String(url.searchParams.get('code') || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!code) return fail(res, 400, 'Missing class code.');
+    const row = db.prepare('SELECT course_id, class_code, owner_user_id, owner_name, title, payload_json FROM custom_classes WHERE UPPER(class_code)=?').get(code);
+    if (!row) return fail(res, 404, 'Class not found.');
+    try {
+      const parsed = JSON.parse(row.payload_json);
+      return json(res, 200, {
+        course: {
+          ...parsed,
+          id: row.course_id,
+          classCode: row.class_code,
+          title: row.title,
+          creator: row.owner_name || parsed.creator || 'Creator',
+          ownerUserId: row.owner_user_id
+        }
+      });
+    } catch {
+      return fail(res, 500, 'Class data corrupted.');
+    }
+  }
+  if (url.pathname === '/api/classes' && method === 'POST') {
+    const input = await body(req, 524288);
+    const course = input.course && typeof input.course === 'object' ? input.course : input;
+    const courseId = String(course.id || '').trim().slice(0, 80);
+    const classCode = String(course.classCode || '').trim().toUpperCase().replace(/\s+/g, '').slice(0, 24);
+    const title = String(course.title || '').trim().slice(0, 100);
+    if (!courseId || classCode.length < 4 || !title) {
+      return fail(res, 400, 'Valid course id, class code, and title are required.');
+    }
+    const existing = db.prepare('SELECT owner_user_id FROM custom_classes WHERE course_id=?').get(courseId);
+    if (existing && existing.owner_user_id !== user.id) {
+      return fail(res, 403, 'Only the class creator can update this class.');
+    }
+    const codeOwner = db.prepare('SELECT course_id FROM custom_classes WHERE UPPER(class_code)=? AND course_id<>?').get(classCode, courseId);
+    if (codeOwner) return fail(res, 409, 'This class code is already in use.');
+    const payload = JSON.stringify({ ...course, id: courseId, classCode, title, creator: user.display_name });
+    db.prepare(`INSERT INTO custom_classes(course_id,class_code,owner_user_id,owner_name,title,payload_json,updated_at)
+      VALUES(?,?,?,?,?,?,?)
+      ON CONFLICT(course_id) DO UPDATE SET
+        class_code=excluded.class_code,
+        owner_name=excluded.owner_name,
+        title=excluded.title,
+        payload_json=excluded.payload_json,
+        updated_at=excluded.updated_at`)
+      .run(courseId, classCode, user.id, user.display_name, title, payload, now());
+    recordUsageEvent(user.id, 'class_publish', classCode, { courseId, title }, req);
+    return json(res, 200, { ok: true, courseId, classCode });
+  }
   if (url.pathname === '/api/analytics/event' && method === 'POST') {
     const input = await body(req, 8192);
     const eventType = String(input.eventType || '').trim().slice(0, 64);
@@ -1461,6 +1540,10 @@ async function api(req, res, url) {
     }
     if (action === 'start' && method === 'POST') {
       if (room.hostUserId !== user.id) return fail(res, 403, 'Only host can start the game.');
+      const unreadyHumans = Array.from(room.players.values()).filter((p) => !p.isBot && !p.ready);
+      if (unreadyHumans.length > 0) {
+        return fail(res, 400, `All players must press Ready before starting (${unreadyHumans.map((p) => p.name).join(', ')}).`);
+      }
       room.questionIndex = -1;
       room.crownUserId = null;
       room.questions = shufflePartyQuestionsDeck(room.questions);
