@@ -4463,9 +4463,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (googleBtn) {
                 event.preventDefault();
                 const form = googleBtn.closest("form");
-                if (form) {
-                    showFormFeedback(form, LearningHausI18n.t("Google Sign-In requires OAuth configuration on a deployed domain. Please sign in with your email and password.", "การเข้าสู่ระบบด้วย Google ต้องตั้งค่า OAuth บนโดเมนจริง กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่าน"), true);
-                }
+                void (async () => {
+                    try {
+                        const res = await fetch("/api/auth/google/status", { credentials: "same-origin" });
+                        const data = (await res.json().catch(() => ({})));
+                        if (res.ok && data.enabled) {
+                            window.location.href = "/api/auth/google/start";
+                            return;
+                        }
+                    }
+                    catch {
+                        // Fall through to setup message.
+                    }
+                    if (form) {
+                        showFormFeedback(form, LearningHausI18n.t("Google Sign-In is not configured yet on this server. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Render Environment Variables.", "ยังไม่ได้ตั้งค่า Google OAuth บนเซิร์ฟเวอร์ กรุณาเพิ่ม GOOGLE_CLIENT_ID และ GOOGLE_CLIENT_SECRET ใน Render Environment Variables"), true);
+                    }
+                })();
                 return;
             }
             const cancelSwitch = target.closest("[data-auth-cancel-switch]");
@@ -4777,9 +4790,26 @@ document.addEventListener('DOMContentLoaded', () => {
             if (initialRestored)
                 return;
             initialRestored = true;
+            const hash = window.location.hash;
+            if (hash === "#google-login" || hash === "#google-error" || hash === "#google-unconfigured") {
+                try {
+                    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+                }
+                catch {
+                    // Ignore history errors.
+                }
+            }
             if (!window.LearningHausSocial?.hasAccount?.()) {
                 saveActiveView("landing");
                 showLanding();
+                if (hash === "#google-error") {
+                    showAuth("signin");
+                }
+                return;
+            }
+            if (hash === "#google-login") {
+                clearExplicitLogout();
+                showHome("learn");
                 return;
             }
             let explicitlyLoggedOut = false;

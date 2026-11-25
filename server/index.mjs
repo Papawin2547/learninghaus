@@ -270,8 +270,16 @@ const issueSession = (res, user, rememberMe = true) => {
   db.prepare('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)')
     .run(sha256(token), user.id, Date.now() + (rememberMe ? 365 * 86400000 : 12 * 60 * 60 * 1000));
   const persistence = rememberMe ? '; Max-Age=31536000' : '';
-  res.setHeader('Set-Cookie', `lh_session=${token}; HttpOnly; SameSite=Strict; Path=/${persistence}`);
+  res.setHeader('Set-Cookie', `lh_session=${token}; HttpOnly; SameSite=Lax; Path=/${persistence}`);
 };
+const googleOAuthStates = new Map();
+const getPublicBaseUrl = (req) => {
+  const configured = String(process.env.PUBLIC_BASE_URL || '').trim().replace(/\/+$/, '');
+  if (configured) return configured;
+  const proto = String(req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim();
+  return `${proto}://${req.headers.host || '127.0.0.1:8766'}`;
+};
+const isGoogleOAuthConfigured = () => Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 const currentUser = (req) => {
   const cookie = /(?:^|;\s*)lh_session=([^;]+)/.exec(req.headers.cookie || '')?.[1];
   if (!cookie) return null;
@@ -732,6 +740,89 @@ async function api(req, res, url) {
   if (!['GET', 'HEAD'].includes(method) && req.headers.origin) {
     try { if (new URL(req.headers.origin).host !== req.headers.host) return fail(res, 403, 'Invalid origin.'); }
     catch { return fail(res, 403, 'Invalid origin.'); }
+  }
+  if (url.pathname === '/api/auth/google/status' && method === 'GET') {
+    return json(res, 200, { enabled: isGoogleOAuthConfigured() });
+  }
+  if (url.pathname === '/api/auth/google/start' && method === 'GET') {
+    if (!isGoogleOAuthConfigured()) {
+      res.writeHead(302, { Location: '/Code/learninghaus.html#google-unconfigured' });
+      return res.end();
+    }
+    const cutoff = Date.now() - 10 * 60 * 1000;
+    for (const [k, ts] of googleOAuthStates) if (ts < cutoff) googleOAuthStates.delete(k);
+    const state = randomBytes(24).toString('base64url');
+    googleOAuthStates.set(state, Date.now());
+    const redirectUri = `${getPublicBaseUrl(req)}/api/auth/google/callback`;
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', String(process.env.GOOGLE_CLIENT_ID || ''));
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'openid email profile');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('prompt', 'select_account');
+    res.writeHead(302, { Location: authUrl.toString() });
+    return res.end();
+  }
+  if (url.pathname === '/api/auth/google/callback' && method === 'GET') {
+    const code = String(url.searchParams.get('code') || '').trim();
+    const state = String(url.searchParams.get('state') || '').trim();
+    if (!isGoogleOAuthConfigured() || !code || !state || !googleOAuthStates.has(state)) {
+      res.writeHead(302, { Location: '/Code/learninghaus.html#google-error' });
+      return res.end();
+    }
+    googleOAuthStates.delete(state);
+    try {
+      const redirectUri = `${getPublicBaseUrl(req)}/api/auth/google/callback`;
+      const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          code,
+          client_id: String(process.env.GOOGLE_CLIENT_ID || ''),
+          client_secret: String(process.env.GOOGLE_CLIENT_SECRET || ''),
+          redirect_uri: redirectUri,
+          grant_type: 'authorization_code'
+        })
+      });
+      const tokenData = await tokenRes.json().catch(() => ({}));
+      if (!tokenRes.ok || !tokenData.access_token) {
+        res.writeHead(302, { Location: '/Code/learninghaus.html#google-error' });
+        return res.end();
+      }
+      const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` }
+      });
+      const profile = await userRes.json().catch(() => ({}));
+      const email = String(profile.email || '').trim().toLowerCase();
+      if (!userRes.ok || !email) {
+        res.writeHead(302, { Location: '/Code/learninghaus.html#google-error' });
+        return res.end();
+      }
+      const displayName = String(profile.name || email.split('@')[0]).trim().slice(0, 40) || 'Learner';
+      const picture = String(profile.picture || '').trim().slice(0, 500);
+      let user = db.prepare('SELECT * FROM users WHERE email=?').get(email);
+      let isNew = false;
+      if (!user) {
+        isNew = true;
+        const id = Number(
+          db.prepare('INSERT INTO users(email,password_hash,display_name,avatar,created_at) VALUES(?,?,?,?,?)')
+            .run(email, passwordHash(randomBytes(24).toString('hex')), displayName, picture, now())
+            .lastInsertRowid
+        );
+        user = db.prepare('SELECT * FROM users WHERE id=?').get(id);
+      } else if (!user.avatar && picture) {
+        db.prepare('UPDATE users SET avatar=? WHERE id=?').run(picture, user.id);
+        user = db.prepare('SELECT * FROM users WHERE id=?').get(user.id);
+      }
+      issueSession(res, user, true);
+      recordUsageEvent(user.id, isNew ? 'register' : 'login', 'google', { method: 'google' }, req);
+      res.writeHead(302, { Location: '/Code/learninghaus.html#google-login' });
+      return res.end();
+    } catch {
+      res.writeHead(302, { Location: '/Code/learninghaus.html#google-error' });
+      return res.end();
+    }
   }
   if (url.pathname === '/api/register' && method === 'POST') {
     const input = await body(req);
